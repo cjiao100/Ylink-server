@@ -18,6 +18,22 @@ router.get('/test', (req, res) => {
 });
 
 /**
+ * $ GET ylink/user/test/token
+ * @description 测试token
+ */
+router.get(
+  '/test/token',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    res.json({
+      id: req.user.id,
+      name: req.user.name,
+      email: req.user.email,
+    });
+  },
+);
+
+/**
  * $ POST ylink/user/register
  * @description 用户注册接口
  */
@@ -73,15 +89,25 @@ router.post('/login', (req, res) => {
   });
 });
 
+/**
+ * $ GET ylink/user/:id
+ * @description 查询用户信息
+ */
 router.get(
-  '/test/token',
+  '/',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
-    res.json({
-      id: req.user.id,
-      name: req.user.name,
-      email: req.user.email,
-    });
+    User.findById(req.user._id)
+      .then(user => {
+        const info = {
+          name: user.name,
+          email: user.email,
+          identity: user.identity,
+        };
+        res.json(info);
+      })
+      .catch(() => res.status(404).json('找不到用户信息'));
   },
 );
+
 module.exports = router;

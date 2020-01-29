@@ -14,6 +14,10 @@ const UserSchema = new Schema({
     type: String,
     required: true,
   },
+  identity: {
+    type: String,
+    default: '0',
+  },
   createDate: {
     type: Date,
     default: Date.now(),
