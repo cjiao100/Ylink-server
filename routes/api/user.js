@@ -47,4 +47,41 @@ router.post('/register', (req, res) => {
   });
 });
 
+/**
+ * $ POST ylink/user/login
+ * @description 登录接口
+ */
+router.post('/login', (req, res) => {
+  User.findOne({ email: req.body.email }).then(user => {
+    if (!user) {
+      return res.status(400).json('该邮箱未注册');
+    } else {
+      bctypt.compare(req.body.pass, user.password, (err, result) => {
+        if (err) throw err;
+        if (result) {
+          const rule = { id: user.id, name: user.name };
+
+          jwt.sign(rule, keys, { expiresIn: 3600 }, (err, token) => {
+            if (err) throw err;
+            res.json({ success: true, token: `Bearer ${token}` });
+          });
+        } else {
+          res.status(400).json('密码错误');
+        }
+      });
+    }
+  });
+});
+
+router.get(
+  '/test/token',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    res.json({
+      id: req.user.id,
+      name: req.user.name,
+      email: req.user.email,
+    });
+  },
+);
 module.exports = router;
