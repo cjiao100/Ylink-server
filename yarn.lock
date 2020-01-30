@@ -1770,6 +1770,11 @@ v8-compile-cache@^2.0.3:
   resolved "https://registry.npm.taobao.org/v8-compile-cache/download/v8-compile-cache-2.1.0.tgz#e14de37b31a6d194f5690d67efc4e7f6fc6ab30e"
   integrity sha1-4U3jezGm0ZT1aQ1n78Tn9vxqsw4=
 
+validator@^12.2.0:
+  version "12.2.0"
+  resolved "https://registry.npm.taobao.org/validator/download/validator-12.2.0.tgz#660d47e96267033fd070096c3b1a6f2db4380a0a"
+  integrity sha1-Zg1H6WJnAz/QcAlsOxpvLbQ4Cgo=
+
 vary@~1.1.2:
   version "1.1.2"
   resolved "https://registry.npm.taobao.org/vary/download/vary-1.1.2.tgz#2299f02c6ded30d4a5961b0b9f74524a18f634fc"

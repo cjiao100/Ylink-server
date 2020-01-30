@@ -5,6 +5,8 @@ const passport = require('passport');
 
 const User = require('../../models/user');
 const keys = require('../../config/keys').secretOrKey;
+const validatorLoginInput = require('../../validator/login');
+const validatorRegisterInput = require('../../validator/register');
 const router = express.Router();
 
 /**
@@ -38,29 +40,37 @@ router.get(
  * @description 用户注册接口
  */
 router.post('/register', (req, res) => {
-  User.findOne({ email: req.body.email }).then(user => {
-    if (user) {
-      return res.status(400).json('邮箱已被注册');
-    } else {
-      const newUser = new User({
-        name: req.body.name,
-        email: req.body.email,
-        password: req.body.pass,
-      });
+  const { errors, isValid } = validatorRegisterInput(req.body);
 
-      bctypt.genSalt(10, (err, salt) => {
-        bctypt.hash(newUser.password, salt, (err, hash) => {
-          if (err) throw err;
-          newUser.password = hash;
+  if (!isValid) {
+    return res.status(400).json(errors);
+  }
 
-          newUser
-            .save()
-            .then(user => res.json(user))
-            .catch(err => console.log(err));
+  User.findOne({ email: req.body.email })
+    .then(user => {
+      if (user) {
+        return res.status(400).json('邮箱已被注册');
+      } else {
+        const newUser = new User({
+          name: req.body.name,
+          email: req.body.email,
+          password: req.body.password,
         });
-      });
-    }
-  });
+
+        bctypt.genSalt(10, (err, salt) => {
+          bctypt.hash(newUser.password, salt, (err, hash) => {
+            if (err) throw err;
+            newUser.password = hash;
+
+            newUser
+              .save()
+              .then(user => res.json(user))
+              .catch(err => console.log(err));
+          });
+        });
+      }
+    })
+    .catch(err => console.log(err));
 });
 
 /**
@@ -68,25 +78,33 @@ router.post('/register', (req, res) => {
  * @description 登录接口
  */
 router.post('/login', (req, res) => {
-  User.findOne({ email: req.body.email }).then(user => {
-    if (!user) {
-      return res.status(400).json('该邮箱未注册');
-    } else {
-      bctypt.compare(req.body.pass, user.password, (err, result) => {
-        if (err) throw err;
-        if (result) {
-          const rule = { id: user.id, name: user.name };
+  const { errors, isValid } = validatorLoginInput(req.body);
 
-          jwt.sign(rule, keys, { expiresIn: 3600 }, (err, token) => {
-            if (err) throw err;
-            res.json({ success: true, token: `Bearer ${token}` });
-          });
-        } else {
-          res.status(400).json('密码错误');
-        }
-      });
-    }
-  });
+  if (!isValid) {
+    return res.status(400).json(errors);
+  }
+
+  User.findOne({ email: req.body.email })
+    .then(user => {
+      if (!user) {
+        return res.status(400).json('该邮箱未注册');
+      } else {
+        bctypt.compare(req.body.password, user.password, (err, result) => {
+          if (err) throw err;
+          if (result) {
+            const rule = { id: user.id, name: user.name };
+
+            jwt.sign(rule, keys, { expiresIn: 3600 }, (err, token) => {
+              if (err) throw err;
+              res.json({ success: true, token: `Bearer ${token}` });
+            });
+          } else {
+            res.status(400).json('密码错误');
+          }
+        });
+      }
+    })
+    .catch(err => console.log(err));
 });
 
 /**
