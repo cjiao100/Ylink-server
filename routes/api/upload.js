@@ -16,7 +16,6 @@ router.post(
         res.status(500).json(errorMessage(err.code) || err.message);
       } else if (err) {
         console.log(err);
-        // 发生错误
       } else {
         fs.copyFile(
           req.file.path,
