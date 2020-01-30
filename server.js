@@ -8,6 +8,7 @@ const port = process.env.PORT || 5000;
 
 const db = require('./config/keys').mongoURI;
 const user = require('./routes/api/user');
+const article = require('./routes/api/article');
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -29,6 +30,7 @@ require('./config/passport')(passport);
 
 // 定义路由
 app.use('/ylink/user', user);
+app.use('/ylink/article', article);
 
 // 连接mongodb数据库
 mongoose
