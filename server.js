@@ -9,6 +9,7 @@ const port = process.env.PORT || 5000;
 const db = require('./config/keys').mongoURI;
 const user = require('./routes/api/user');
 const article = require('./routes/api/article');
+const upload = require('./routes/api/upload');
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -16,6 +17,9 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Methods', 'PUT,POST,GET,DELETE,OPTIONS');
   next();
 });
+
+// 挂载静态目录
+app.use(express.static('temp'));
 
 // 使用bodyParser
 app.use(
@@ -31,6 +35,7 @@ require('./config/passport')(passport);
 // 定义路由
 app.use('/ylink/user', user);
 app.use('/ylink/article', article);
+app.use('/ylink/', upload);
 
 // 连接mongodb数据库
 mongoose
