@@ -51,10 +51,7 @@ router.post(
             file.path,
             `${file.destination}/article/${file.filename}.png`,
           );
-          files.push({
-            filename: file.originalname,
-            url: `/article/${file.filename}.png`,
-          });
+          files.push(`/article/${file.filename}.png`);
           fs.unlink(file.path, err => {
             if (err) throw err;
           });

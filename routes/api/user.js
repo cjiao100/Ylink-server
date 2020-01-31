@@ -108,7 +108,7 @@ router.post('/login', (req, res) => {
 });
 
 /**
- * $ GET ylink/user/:id
+ * $ GET ylink/user/
  * @description 查询用户信息
  */
 router.get(
@@ -125,6 +125,24 @@ router.get(
         res.json(info);
       })
       .catch(() => res.status(404).json('找不到用户信息'));
+  },
+);
+
+/**
+ * $ PUT ylink/user/update
+ * @description 更新用户数据
+ */
+router.put(
+  '/update',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    User.where({ _id: req.user._id })
+      .update({ $set: req.body })
+      .exec()
+      .then(item => {
+        // console.log(user);
+        res.json(item);
+      });
   },
 );
 
