@@ -18,6 +18,26 @@ const UserSchema = new Schema({
     type: String,
     default: '0',
   },
+  // 性别
+  gender: {
+    type: String,
+    default: '0',
+  },
+  // 单词本
+  wordbook: {
+    type: [Schema.Types.ObjectId],
+    default: [],
+  },
+  // 赞
+  awesome: {
+    type: [Schema.Types.ObjectId],
+    default: [],
+  },
+  // 浏览历史
+  browse: {
+    type: [Schema.Types.ObjectId],
+    default: [],
+  },
   createDate: {
     type: Date,
     default: Date.now(),

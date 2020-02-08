@@ -10,6 +10,7 @@ const db = require('./config/keys').mongoURI;
 const user = require('./routes/api/user');
 const article = require('./routes/api/article');
 const upload = require('./routes/api/upload');
+const translate = require('./routes/api/translate');
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -33,9 +34,10 @@ app.use(passport.initialize());
 require('./config/passport')(passport);
 
 // 定义路由
+app.use('/ylink/', upload);
 app.use('/ylink/user', user);
 app.use('/ylink/article', article);
-app.use('/ylink/', upload);
+app.use('/ylink/translate', translate);
 
 // 连接mongodb数据库
 mongoose
