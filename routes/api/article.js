@@ -2,16 +2,19 @@ const express = require('express');
 const passport = require('passport');
 
 const Article = require('../../models/article');
+const User = require('../../models/user');
 const validatorArticleInput = require('../../validator/article');
 const router = express.Router();
 
 /**
  * $ GET ylink/article/inquire？pageNum=0&pageSize=0
- * @description 查询文章接口
+ * @description 查询文章列表接口
  */
 router.get('/inquire', (req, res) => {
   const { pageNum, pageSize } = req.query;
-  Article.find({ createTime: { $gte: Date.now() - 5 * 24 * 60 * 60 * 1000 } })
+  // 查询一周以内的文章
+  // Article.find({ createTime: { $gte: Date.now() - 5 * 24 * 60 * 60 * 1000 } })
+  Article.find()
     .skip(pageNum * pageSize)
     .limit(Number(pageSize))
     .sort({ browse: 'desc', awesome: 'desc' })
@@ -48,6 +51,52 @@ router.post(
       .catch(err => console.log(err));
   },
 );
+
+/**
+ * $ GET ylink/article/:id
+ * @description 查询文章接口
+ */
+router.get('/:id', (req, res) => {
+  Article.findById(req.params.id)
+    .then(article => {
+      res.json(article);
+    })
+    .catch(err => {
+      res.status(400).json(err.message);
+    });
+});
+
+/**
+ * $ post ylink/article/:id/comment
+ * @description 评论文章
+ */
+/**
+ * $ PUT ylink/article/:id/awesome
+ * @description 点赞文章
+ */
+router.put(
+  '/:id/awesome',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    Article.findById(req.params.id).then(article => {
+      if (article.awesome.includes(req.user._id)) {
+        res.json('yb');
+      }
+      User.updateOne(
+        { _id: req.user._id },
+        { $push: { awsome: req.user.id } },
+      ).then(i => {
+        console.log(i);
+        article.awesome.push(req.user._id);
+        article.save().then(i => console.log(i));
+      });
+    });
+  },
+);
+/**
+ * $ post ylink/article/:id/comment
+ * @description 浏览文章
+ */
 
 /**
  * $ GET ylink/article？numPage=0&numSize=0

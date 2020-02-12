@@ -25,12 +25,12 @@ const articleSchema = new Schema({
     default: 0,
   },
   comment: {
-    type: String,
-    default: 0,
+    type: [Object],
+    default: [],
   },
   awesome: {
-    type: String,
-    default: 0,
+    type: [Schema.Types.ObjectId],
+    default: [],
   },
   createTime: {
     type: Date,

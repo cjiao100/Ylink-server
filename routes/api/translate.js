@@ -90,15 +90,14 @@ router.get(
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
     const wordIdList = req.user.wordbook;
-    const wordbook = [];
-    wordIdList.forEach((id, index) => {
-      Wordbook.findById(id).then(item => {
-        wordbook.push(item);
-        if (index === wordIdList.length - 1) {
-          res.json(wordbook);
-        }
+    Wordbook.find({ _id: { $in: wordIdList } })
+      .then(item => {
+        const wordbook = item;
+        res.json(wordbook);
+      })
+      .catch(err => {
+        res.status(400).json(err.message);
       });
-    });
   },
 );
 
