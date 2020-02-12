@@ -85,4 +85,35 @@ router.post(
   },
 );
 
+router.get(
+  '/list',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    const wordIdList = req.user.wordbook;
+    const wordbook = [];
+    wordIdList.forEach((id, index) => {
+      Wordbook.findById(id).then(item => {
+        wordbook.push(item);
+        if (index === wordIdList.length - 1) {
+          res.json(wordbook);
+        }
+      });
+    });
+  },
+);
+
+router.get(
+  '/word/:id',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    Wordbook.findById(req.params.id)
+      .then(word => {
+        res.json(word);
+      })
+      .catch(err => {
+        res.status(400).json(err.message);
+      });
+  },
+);
+
 module.exports = router;
