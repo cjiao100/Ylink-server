@@ -82,21 +82,47 @@ router.put(
       if (article.awesome.includes(req.user._id)) {
         res.json('yb');
       }
-      User.updateOne(
-        { _id: req.user._id },
-        { $push: { awsome: req.user.id } },
-      ).then(i => {
-        console.log(i);
-        article.awesome.push(req.user._id);
-        article.save().then(i => console.log(i));
-      });
+      User.updateOne({ _id: req.user._id }, { $push: { awsome: req.user.id } })
+        .then(i => {
+          console.log(i);
+          article.awesome.push(req.user._id);
+          article
+            .save()
+            .then(() => res.json('success'))
+            .catch(err => res.json(err.message));
+        })
+        .catch(err => res.json(err.message));
     });
   },
 );
 /**
- * $ post ylink/article/:id/comment
+ * $ post ylink/article/:id/browse
  * @description 浏览文章
  */
+router.put(
+  '/:id/browse',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    Article.find({ _id: req.params.id, browse: req.user._id }).then(article => {
+      console.log(article);
+      if (article.length === 0) {
+        Article.updateOne(
+          { _id: req.params.id },
+          { $push: { browse: req.user._id } },
+        )
+          .then(() =>
+            User.updateOne(
+              { _id: req.user._id },
+              { $push: { browse: req.params.id } },
+            ),
+          )
+          .then(() => res.json(true));
+      } else {
+        return res.json(false);
+      }
+    });
+  },
+);
 
 /**
  * $ GET ylink/article？numPage=0&numSize=0

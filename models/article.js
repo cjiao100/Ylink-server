@@ -21,8 +21,8 @@ const articleSchema = new Schema({
     type: String,
   },
   browse: {
-    type: String,
-    default: 0,
+    type: [Schema.Types.ObjectId],
+    default: [],
   },
   comment: {
     type: [Object],
