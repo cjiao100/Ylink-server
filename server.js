@@ -40,6 +40,7 @@ app.use('/ylink/article', article);
 app.use('/ylink/translate', translate);
 
 // 连接mongodb数据库
+mongoose.set('useFindAndModify', false);
 mongoose
   .connect(db, {
     useNewUrlParser: true,

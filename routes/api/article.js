@@ -3,7 +3,9 @@ const passport = require('passport');
 
 const Article = require('../../models/article');
 const User = require('../../models/user');
+const Comment = require('../../models/comment');
 const validatorArticleInput = require('../../validator/article');
+const validatorCommentInput = require('../../validator/comment');
 const router = express.Router();
 
 /**
@@ -17,7 +19,7 @@ router.get('/inquire', (req, res) => {
   Article.find()
     .skip(pageNum * pageSize)
     .limit(Number(pageSize))
-    .sort({ browse: 'desc', awesome: 'desc' })
+    // .sort({ browse: 'desc', awesome: 'desc' })
     .exec()
     .then(list => res.json(list))
     .catch(err => console.log(err));
@@ -34,7 +36,7 @@ router.post(
     const { errors, isValid } = validatorArticleInput(req.body);
 
     if (!isValid) {
-      return res.status(400).json(errors);
+      return res.status(403).json(errors);
     }
 
     const newArticle = new Article({
@@ -62,7 +64,7 @@ router.get('/:id', (req, res) => {
       res.json(article);
     })
     .catch(err => {
-      res.status(400).json(err.message);
+      res.status(500).json(err.message);
     });
 });
 
@@ -70,6 +72,69 @@ router.get('/:id', (req, res) => {
  * $ post ylink/article/:id/comment
  * @description 评论文章
  */
+router.post(
+  '/:id/comment',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    const { errors, isValid } = validatorCommentInput(req.body);
+
+    if (!isValid) {
+      return res.status(403).json(errors);
+    }
+
+    const newComment = new Comment({
+      userId: req.user._id,
+      articleId: req.params.id,
+      content: req.body.content,
+    });
+
+    newComment
+      .save()
+      .then(comment =>
+        Article.findByIdAndUpdate(req.params.id, {
+          $push: { comment: comment._id },
+        }),
+      )
+      .then(() => {
+        res.json(true);
+      })
+      .catch(err => {
+        res.status(500).json(err.message);
+      });
+  },
+);
+
+/**
+ * $ post ylink/article/:id/comment/:commentId
+ */
+router.post(
+  '/:id/comment/:commentId',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    const { errors, isValid } = validatorCommentInput(req.body);
+    if (!isValid) {
+      return res.status(403).json(errors);
+    }
+
+    const newSubComment = new Comment({
+      articleId: req.params.id,
+      userId: req.user._id,
+      commentId: req.params.commentId,
+      content: req.body.content,
+    });
+
+    newSubComment
+      .save()
+      .then(comment =>
+        Comment.findByIdAndUpdate(req.params.commentId, {
+          $push: { children: comment._id },
+        }),
+      )
+      .then(() => res.json(true))
+      .catch(err => res.status(500).json(err.message));
+  },
+);
+
 /**
  * $ PUT ylink/article/:id/awesome
  * @description 点赞文章
@@ -96,7 +161,7 @@ router.put(
   },
 );
 /**
- * $ post ylink/article/:id/browse
+ * $ put ylink/article/:id/browse
  * @description 浏览文章
  */
 router.put(
