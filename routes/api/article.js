@@ -106,6 +106,7 @@ router.post(
 
 /**
  * $ post ylink/article/:id/comment/:commentId
+ * @description 添加子评论
  */
 router.post(
   '/:id/comment/:commentId',
@@ -132,6 +133,46 @@ router.post(
       )
       .then(() => res.json(true))
       .catch(err => res.status(500).json(err.message));
+  },
+);
+
+/**
+ * $ get ylink/article/:id/comment/list
+ * @description 获取评论列表
+ */
+router.get(
+  '/:id/comment/list',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    Comment.find({ articleId: req.params.id }).then(commentList => {
+      const subcomments = JSON.parse(
+        JSON.stringify(commentList.filter(item => item.commentId)),
+      );
+      const comments = JSON.parse(
+        JSON.stringify(commentList.filter(item => !item.commentId)),
+      );
+
+      // 将一维数组转为树状结构
+      const translator = (comments, subcomments) => {
+        comments.forEach(comment => {
+          subcomments.forEach((subcomment, index) => {
+            if (subcomment.commentId.toString() === comment._id.toString()) {
+              let temp = JSON.parse(JSON.stringify(subcomments));
+              temp.splice(index, -1);
+              translator([subcomment], temp);
+              if (typeof comment.childrens !== 'undefined') {
+                comment.childrens.push(subcomment);
+              } else {
+                comment.childrens = [subcomment];
+              }
+            }
+          });
+        });
+      };
+
+      translator(comments, subcomments);
+      res.json(comments);
+    });
   },
 );
 
