@@ -96,7 +96,12 @@ router.post('/login', (req, res) => {
 
             jwt.sign(rule, keys, { expiresIn: 3600 }, (err, token) => {
               if (err) throw err;
-              res.json({ success: true, token: `Bearer ${token}` });
+              res
+                .cookie('token', `Bearer ${token}`, {
+                  httpOnly: true,
+                  expires: 3600,
+                })
+                .json({ success: true });
             });
           } else {
             res.status(400).json('密码错误');
