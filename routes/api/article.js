@@ -277,8 +277,24 @@ router.put(
 );
 
 /**
- * $ GET ylink/article？numPage=0&numSize=0
+ * $ delete ylink/article/:id
  * @description 删除文章接口
  */
+router.delete(
+  '/:id',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    Article.findByIdAndDelete(req.params.id)
+      .then(article => {
+        console.log(article);
+        if (article) {
+          res.json(true);
+        } else {
+          res.status(404).json({ message: '没有这个文章' });
+        }
+      })
+      .catch(err => res.status(500).json(err.message));
+  },
+);
 
 module.exports = router;
