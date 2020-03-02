@@ -96,7 +96,6 @@ router.post('/login', (req, res) => {
 
             jwt.sign(rule, keys, { expiresIn: 3600 }, (err, token) => {
               if (err) throw err;
-              console.log(11);
               res
                 .cookie('token', `Bearer ${token}`, {
                   httpOnly: true,
@@ -145,7 +144,6 @@ router.put(
       .update({ $set: req.body })
       .exec()
       .then(item => {
-        // console.log(user);
         res.json(item);
       });
   },

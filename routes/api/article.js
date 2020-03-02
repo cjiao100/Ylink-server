@@ -235,8 +235,7 @@ router.put(
         res.json('yb');
       }
       User.updateOne({ _id: req.user._id }, { $push: { awsome: req.user.id } })
-        .then(i => {
-          console.log(i);
+        .then(() => {
           article.awesome.push(req.user._id);
           article
             .save()
@@ -256,7 +255,6 @@ router.put(
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
     Article.find({ _id: req.params.id, browse: req.user._id }).then(article => {
-      console.log(article);
       if (article.length === 0) {
         Article.updateOne(
           { _id: req.params.id },
@@ -286,7 +284,6 @@ router.delete(
   (req, res) => {
     Article.findByIdAndDelete(req.params.id)
       .then(article => {
-        console.log(article);
         if (article) {
           res.json(true);
         } else {
