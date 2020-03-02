@@ -11,6 +11,7 @@ const user = require('./routes/api/user');
 const article = require('./routes/api/article');
 const upload = require('./routes/api/upload');
 const translate = require('./routes/api/translate');
+const test = require('./routes/api/test');
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -38,6 +39,7 @@ app.use('/ylink/', upload);
 app.use('/ylink/user', user);
 app.use('/ylink/article', article);
 app.use('/ylink/translate', translate);
+app.use('/ylink/test', test);
 
 // 连接mongodb数据库
 mongoose.set('useFindAndModify', false);

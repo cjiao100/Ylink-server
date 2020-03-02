@@ -20,4 +20,4 @@ const planSchema = new Schema({
   },
 });
 
-module.exports = mongoose.model('article', planSchema);
+module.exports = mongoose.model('plan', planSchema);
