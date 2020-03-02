@@ -32,6 +32,10 @@ const articleSchema = new Schema({
     type: [Schema.Types.ObjectId],
     default: [],
   },
+  updateTime: {
+    type: Date,
+    default: Date.now(),
+  },
   createTime: {
     type: Date,
     default: Date.now(),
