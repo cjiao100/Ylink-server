@@ -6,6 +6,10 @@ const UserSchema = new Schema({
     type: String,
     require: true,
   },
+  avatar: {
+    type: String,
+    required: true,
+  },
   email: {
     type: String,
     require: true,

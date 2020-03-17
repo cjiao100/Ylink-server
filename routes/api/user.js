@@ -1,5 +1,5 @@
 const express = require('express');
-const bctypt = require('bcrypt');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 
@@ -7,6 +7,7 @@ const User = require('../../models/user');
 const keys = require('../../config/keys').secretOrKey;
 const validatorLoginInput = require('../../validator/login');
 const validatorRegisterInput = require('../../validator/register');
+const defaultAvatar = require('../../util/avatar');
 const router = express.Router();
 
 /**
@@ -14,9 +15,8 @@ const router = express.Router();
  * @description 用户测试接口
  */
 router.get('/test', (req, res) => {
-  res.json({
-    msg: 'user OK',
-  });
+  const avatar = defaultAvatar('cjiao100');
+  res.send(avatar);
 });
 
 /**
@@ -55,10 +55,11 @@ router.post('/register', (req, res) => {
           name: req.body.name,
           email: req.body.email,
           password: req.body.password,
+          avatar: defaultAvatar(req.body.email),
         });
 
-        bctypt.genSalt(10, (err, salt) => {
-          bctypt.hash(newUser.password, salt, (err, hash) => {
+        bcrypt.genSalt(10, (err, salt) => {
+          bcrypt.hash(newUser.password, salt, (err, hash) => {
             if (err) throw err;
             newUser.password = hash;
 
@@ -89,7 +90,7 @@ router.post('/login', (req, res) => {
       if (!user) {
         return res.status(400).json('该邮箱未注册');
       } else {
-        bctypt.compare(req.body.password, user.password, (err, result) => {
+        bcrypt.compare(req.body.password, user.password, (err, result) => {
           if (err) throw err;
           if (result) {
             const rule = { id: user.id, name: user.name };
@@ -125,6 +126,7 @@ router.get(
           name: user.name,
           email: user.email,
           identity: user.identity,
+          avatar: user.avatar,
         };
         res.json(info);
       })
