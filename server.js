@@ -12,6 +12,8 @@ const article = require('./routes/api/article');
 const upload = require('./routes/api/upload');
 const translate = require('./routes/api/translate');
 const test = require('./routes/api/test');
+const wordbook = require('./routes/api/wordbook');
+const word = require('./routes/api/word');
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -40,6 +42,8 @@ app.use('/ylink/user', user);
 app.use('/ylink/article', article);
 app.use('/ylink/translate', translate);
 app.use('/ylink/test', test);
+app.use('/ylink/wordbook', wordbook);
+app.use('/ylink/word', word);
 
 // 连接mongodb数据库
 mongoose.set('useFindAndModify', false);

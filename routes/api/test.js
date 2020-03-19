@@ -71,22 +71,47 @@ router.get(
   },
 );
 
-// /**
-//  * @description 获取测试题列表
-//  */
-// router.get(
-//   '/user',
-//   passport.authenticate('jwt', { session: false }),
-//   (req, res) => {},
-// );
+/**
+ * @description 用户选择计划
+ */
+router.post(
+  '/plan/select/:planId',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    // res.json(req.params);
+    Plan.findById(req.params.planId).then(plan => {
+      User.findById(req.user._id).then(user => {
+        user.plan.currentPlanId = req.params.planId;
+        const p = {
+          planId: plan._id,
+          total: plan.wordlist.length,
+          complete: [],
+          error: [],
+        };
+        if (!user.plan.planList) {
+          user.plan.planList = [p];
+          // console.log(temp);
+        } else {
+          const temp = user.plan.planList.filter(item => {
+            return item.planId.toString() === req.params.planId.toString();
+          });
 
-// /**
-//  * @description 用户计划
-//  */
-// router.get(
-//   '/user',
-//   passport.authenticate('jwt', { session: false }),
-//   (req, res) => {},
-// );
+          if (temp.length === 0) {
+            console.log(temp);
+            user.plan.planList.push(p);
+          }
+        }
+
+        user.save().then(t => {
+          res.json(t);
+        });
+      });
+    });
+  },
+);
+
+/**
+ * @description 获取计划的单词列表
+ */
 
 module.exports = router;

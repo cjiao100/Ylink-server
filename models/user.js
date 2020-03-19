@@ -29,8 +29,7 @@ const UserSchema = new Schema({
   },
   // 单词本
   wordbook: {
-    type: [Schema.Types.ObjectId],
-    default: [],
+    type: Schema.Types.ObjectId,
   },
   // 赞
   awesome: {
@@ -41,6 +40,11 @@ const UserSchema = new Schema({
   browse: {
     type: [Schema.Types.ObjectId],
     default: [],
+  },
+  // 计划
+  plan: {
+    type: Object,
+    default: {},
   },
   createDate: {
     type: Date,

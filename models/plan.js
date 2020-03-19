@@ -6,7 +6,7 @@ const planSchema = new Schema({
     type: String,
     required: true,
   },
-  wordlist: {
+  wordList: {
     type: [Schema.Types.ObjectId],
     default: [],
   },
