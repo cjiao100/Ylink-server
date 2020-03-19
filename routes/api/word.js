@@ -12,9 +12,14 @@ router.get(
   '/list/noplan',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
-    Word.find().then(wordList => {
-      res.json(wordList.filter(item => !item.planId));
-    });
+    Word.find()
+      .then(wordList => {
+        res.json(wordList.filter(item => !item.planId));
+      })
+      .catch(err => {
+        res.status(500).json(err.message);
+        throw new Error(err);
+      });
   },
 );
 

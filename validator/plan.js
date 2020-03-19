@@ -7,7 +7,7 @@ module.exports = data => {
   data.name = isEmpty(data.name) ? '' : data.name;
 
   if (Validator.isEmpty(data.name)) {
-    errors.name = '计划名不能为空';
+    errors.message = '计划名不能为空';
   }
 
   return {
