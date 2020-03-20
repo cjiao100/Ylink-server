@@ -49,17 +49,19 @@ router.post(
 );
 
 /**
- * @description 配置计划
+ * @description 配置计划 添加单词
  */
 router.put(
   '/config/:planId',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
-    Plan.findById(req.params.planId)
-      .then(plan => {
-        plan.wordList.push(...JSON.parse(req.body.wordList));
-        return plan.save();
-      })
+    Plan.findByIdAndUpdate(
+      req.params.planId,
+      {
+        $addToSet: { wordList: JSON.parse(req.body.wordList) },
+      },
+      { new: true },
+    )
       .then(plan => {
         const wordList = JSON.parse(req.body.wordList);
         return Word.updateMany(
@@ -73,6 +75,39 @@ router.put(
       })
       .catch(err => {
         res.status(500).json(err);
+        throw new Error(err);
+      });
+  },
+);
+
+/**
+ * @description 配置计划 移除单词
+ */
+router.put(
+  '/config/:planId/delete',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    let deleteWordList = JSON.parse(req.body.wordList);
+    Plan.findById(req.params.planId)
+      .then(plan => {
+        plan.wordList = plan.wordList.filter(
+          item => !deleteWordList.includes(item.toString()),
+        );
+        // res.json(plan);
+        return plan.save();
+      })
+      .then(() => {
+        return Word.updateMany(
+          { _id: deleteWordList },
+          { $unset: { planId: '' } },
+        );
+      })
+      .then(result => {
+        if (result.ok === 1) res.json(true);
+      })
+      .catch(err => {
+        res.status(500).json(err);
+        throw new Error(err);
       });
   },
 );
