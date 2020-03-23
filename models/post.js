@@ -23,6 +23,10 @@ const postSchema = new Schema(
       type: [Schema.Types.ObjectId],
       default: [],
     },
+    images: {
+      type: [String],
+      default: [],
+    },
   },
   { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } },
 );

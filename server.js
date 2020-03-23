@@ -15,6 +15,7 @@ const test = require('./routes/api/test');
 const wordbook = require('./routes/api/wordbook');
 const word = require('./routes/api/word');
 const plan = require('./routes/api/plan');
+const post = require('./routes/api/post');
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -46,6 +47,7 @@ app.use('/ylink/test', test);
 app.use('/ylink/wordbook', wordbook);
 app.use('/ylink/word', word);
 app.use('/ylink/plan', plan);
+app.use('/ylink/post', post);
 
 // 连接mongodb数据库
 mongoose.set('useFindAndModify', false);
