@@ -46,15 +46,7 @@ const UserSchema = new Schema(
       type: [Schema.Types.ObjectId],
       default: [],
     },
-    createDate: {
-      type: Date,
-      default: Date.now(),
-    },
-    updateDate: {
-      type: Date,
-      default: Date.now(),
-    },
-    lastDate: {
+    lastLogin: {
       type: Date,
       default: Date.now(),
     },

@@ -1,19 +1,14 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const WordbookSchema = new Schema({
-  wordList: {
-    type: [Schema.Types.ObjectId],
-    default: [],
+const WordbookSchema = new Schema(
+  {
+    wordList: {
+      type: [Schema.Types.ObjectId],
+      default: [],
+    },
   },
-  createTime: {
-    type: Date,
-    default: Date.now(),
-  },
-  updateTime: {
-    type: Date,
-    default: Date.now(),
-  },
-});
+  { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } },
+);
 
 module.exports = mongoose.model('wordbook', WordbookSchema);

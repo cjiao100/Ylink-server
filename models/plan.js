@@ -1,23 +1,18 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const planSchema = new Schema({
-  name: {
-    type: String,
-    required: true,
+const planSchema = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    wordList: {
+      type: [Schema.Types.ObjectId],
+      default: [],
+    },
   },
-  wordList: {
-    type: [Schema.Types.ObjectId],
-    default: [],
-  },
-  updateTime: {
-    type: Date,
-    default: Date.now(),
-  },
-  createTime: {
-    type: Date,
-    default: Date.now(),
-  },
-});
+  { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } },
+);
 
 module.exports = mongoose.model('plan', planSchema);

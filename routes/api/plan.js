@@ -65,12 +65,16 @@ router.put(
       { new: true },
     )
       .then(plan => {
-        const wordList = JSON.parse(req.body.wordList);
-        return Word.updateMany(
-          { _id: wordList },
-          { planId: plan._id },
-          { multi: true },
-        );
+        if (!plan) {
+          res.status(404).json('未找到计划');
+        } else {
+          const wordList = JSON.parse(req.body.wordList);
+          return Word.updateMany(
+            { _id: wordList },
+            { planId: plan._id },
+            { multi: true },
+          );
+        }
       })
       .then(result => {
         if (result.ok) res.json(true);

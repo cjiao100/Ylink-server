@@ -2,116 +2,91 @@ const express = require('express');
 const passport = require('passport');
 
 const User = require('../../models/user');
+const Word = require('../../models/word');
 const Plan = require('../../models/plan');
-// const WordBook = require('../../models/wordbook');
-const validatorPlanInput = require('../../validator/plan');
+const UserPlan = require('../../models/userPlan');
+const { random, randomList } = require('../../util/random');
 const router = express.Router();
 
 /**
- * @description 添加计划
- */
-router.post(
-  '/plan/add',
-  passport.authenticate('jwt', { session: false }),
-  (req, res) => {
-    const { errors, isValid } = validatorPlanInput(req.body);
-
-    if (!isValid) {
-      return res.status(403).json(errors);
-    }
-
-    const newPlan = new Plan({
-      name: req.body.name,
-    });
-
-    newPlan
-      .save()
-      .then(plan => res.json(plan))
-      .catch(err => console.log(err));
-  },
-);
-
-/**
- * @description 配置计划
- */
-router.put(
-  '/plan/edit/:planId',
-  passport.authenticate('jwt', { session: false }),
-  (req, res) => {
-    Plan.findById(req.params.planId).then(plan => {
-      if (!req.body.word) {
-        return res.status(400).json('word的不可为空');
-      }
-      const word = JSON.parse(req.body.word);
-      plan.wordlist.push(...word);
-      plan
-        .save()
-        .then(result => {
-          res.json(result);
-        })
-        .catch(err => {
-          console.log(err);
-          new Error(err.message);
-        });
-    });
-  },
-);
-
-/**
- * @description 计划列表
+ * @description 获取计划中的单词
  */
 router.get(
-  '/plan/list',
+  '/',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
-    Plan.find().then(planList => {
-      // console.log(res);
-      res.json(planList);
-    });
+    let word = {};
+    Promise.all([
+      Plan.findById(req.user.plan),
+      UserPlan.findOne({ userId: req.user._id, planId: req.user.plan }),
+    ])
+      .then(([plan, userPlan]) => {
+        if (!plan) {
+          res.status(404).json({ message: '未设置计划' });
+        } else {
+          const complete = [...userPlan.completeList];
+          const word = [...plan.wordList];
+          const undone = word.filter(v =>
+            complete.some(item => item.toString() !== v.toString()),
+          );
+          return random(Word, undone);
+        }
+      })
+      .then(item => {
+        word = item;
+        return randomList(Word, 4, item._id);
+      })
+      .then(list => {
+        const wordList = list;
+        const index = Math.floor(Math.random() * wordList.length);
+        wordList.splice(index, 0, {
+          value: word.basic.explains.join('；'),
+          index: 1,
+        });
+
+        const result = {
+          wordId: word._id,
+          question: word.query,
+          phonetic: word.basic.phonetic,
+          speech: word.basic['uk-speech'],
+          answer: wordList,
+        };
+        res.json(result);
+      })
+      .catch(err => {
+        res.status(500).json(err);
+        throw new Error(err);
+      });
   },
 );
 
 /**
- * @description 用户选择计划
+ * @description 答题结果
  */
 router.post(
-  '/plan/select/:planId',
+  '/result/:wordId',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
-    // res.json(req.params);
-    Plan.findById(req.params.planId).then(plan => {
-      User.findById(req.user._id).then(user => {
-        user.plan.currentPlanId = req.params.planId;
-        const p = {
-          planId: plan._id,
-          total: plan.wordlist.length,
-          complete: [],
-          error: [],
-        };
-        if (!user.plan.planList) {
-          user.plan.planList = [p];
-          // console.log(temp);
-        } else {
-          const temp = user.plan.planList.filter(item => {
-            return item.planId.toString() === req.params.planId.toString();
-          });
-
-          if (temp.length === 0) {
-            console.log(temp);
-            user.plan.planList.push(p);
-          }
-        }
-
-        user.save().then(t => {
-          res.json(t);
+    if (req.body.result) {
+      UserPlan.findOneAndUpdate(
+        {
+          userId: req.user._id,
+          planId: req.user.plan,
+        },
+        { $push: { completeList: req.params.wordId } },
+        { new: true },
+      )
+        .then(userPlan => {
+          res.json(userPlan);
+        })
+        .catch(err => {
+          res.status(500).json(err);
+          throw err;
         });
-      });
-    });
+    } else {
+      res.json({ message: '回答错误' });
+    }
   },
 );
-
-/**
- * @description 获取计划的单词列表
- */
 
 module.exports = router;
