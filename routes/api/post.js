@@ -29,35 +29,31 @@ router.post(
       topicList: [],
     });
 
+    const post = await newPost.save();
+
     const topicList = (req.body.content.match(/#([^#]+)#/g) || []).map(
       item => item.split('#')[1],
     );
 
     if (topicList.length !== 0) {
-      const top1 = [];
-      topicList.forEach(async title => {
-        const result = await Topic.findOne({ title });
+      for (let i = 0; i < topicList.length; i++) {
+        const result = await Topic.findOne({ title: topicList[i] });
         if (result) {
-          result.postList.push(newPost._id);
-
+          result.postList.push(post._id);
           const topic = await result.save();
-          top1.push(topic._id);
-          newPost.topicList.push(topic._id);
+          post.topicList.push(topic._id);
         } else {
           const newTopic = new Topic({
-            title,
-            postList: [newPost._id],
+            title: topicList[i],
+            postList: [post._id],
           });
-
           const topic = await newTopic.save();
-          top1.push(topic._id);
-          newPost.topicList.push(topic._id);
+          post.topicList.push(topic._id);
         }
-
-        const post = await newPost.save();
-        res.json(post);
-      });
+      }
     }
+
+    res.json(await post.save());
   },
 );
 
