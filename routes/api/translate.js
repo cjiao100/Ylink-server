@@ -28,8 +28,8 @@ router.post('/', (req, res) => {
           res.json(data);
         })
         .catch(err => {
-          new Error(err.message);
           res.status(500).json('异常');
+          throw err.message;
         });
     }
   });

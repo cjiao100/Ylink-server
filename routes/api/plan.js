@@ -45,7 +45,7 @@ router.post(
       })
       .catch(err => {
         res.status(500).json(err.message);
-        throw new Error(err);
+        throw err;
       });
   },
 );
@@ -81,7 +81,7 @@ router.put(
       })
       .catch(err => {
         res.status(500).json(err);
-        throw new Error(err);
+        throw err;
       });
   },
 );
@@ -113,7 +113,7 @@ router.put(
       })
       .catch(err => {
         res.status(500).json(err);
-        throw new Error(err);
+        throw err;
       });
   },
 );
@@ -128,7 +128,7 @@ router.delete(
     Plan.findByIdAndDelete(req.params.planId)
       .then(plan => {
         if (plan) {
-          console.log(plan);
+          // console.log(plan);
           return Promise.all([
             Word.updateMany({ _id: plan.wordList }, { $unset: { planId: '' } }),
             User.updateMany({ planId: plan._id }, { $unset: { plan: '' } }),
@@ -145,7 +145,7 @@ router.delete(
       })
       .catch(err => {
         res.status(500).json(err);
-        throw new Error(err);
+        throw err;
       });
   },
 );
@@ -181,6 +181,28 @@ router.post(
       })
       .catch(err => {
         res.status(500).json(err);
+      });
+  },
+);
+
+/**
+ * @description 重新开始计划
+ */
+router.put(
+  '/reload',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    UserPlan.findOneAndUpdate(
+      { userId: req.user._id, planId: req.user.plan },
+      { $set: { completeList: [] } },
+      { new: true },
+    )
+      .then(userPlan => {
+        if (userPlan) res.json(true);
+      })
+      .catch(err => {
+        res.status(500).json(err);
+        throw err;
       });
   },
 );

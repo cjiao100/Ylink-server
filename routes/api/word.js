@@ -18,7 +18,7 @@ router.get(
       })
       .catch(err => {
         res.status(500).json(err.message);
-        throw new Error(err);
+        throw err;
       });
   },
 );

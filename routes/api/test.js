@@ -1,7 +1,6 @@
 const express = require('express');
 const passport = require('passport');
 
-const User = require('../../models/user');
 const Word = require('../../models/word');
 const Plan = require('../../models/plan');
 const UserPlan = require('../../models/userPlan');
@@ -22,19 +21,23 @@ router.get(
     ])
       .then(([plan, userPlan]) => {
         if (!plan) {
-          res.status(404).json({ message: '未设置计划' });
+          throw { success: true, status: 404, message: '未设置计划' };
         } else {
           const complete = [...userPlan.completeList];
           const word = [...plan.wordList];
-          const undone = word.filter(v =>
-            complete.some(item => item.toString() !== v.toString()),
+          const undone = word.filter(
+            v => !complete.some(item => item.toString() == v.toString()),
           );
           return random(Word, undone);
         }
       })
       .then(item => {
-        word = item;
-        return randomList(Word, 4, item._id);
+        if (!item) {
+          throw { success: true, status: 200, message: '计划完成' };
+        } else {
+          word = item;
+          return randomList(Word, 4, item._id);
+        }
       })
       .then(list => {
         const wordList = list;
@@ -54,8 +57,11 @@ router.get(
         res.json(result);
       })
       .catch(err => {
-        res.status(500).json(err);
-        throw new Error(err);
+        if (err.success) {
+          res.status(err.status).json(err);
+        } else {
+          throw err;
+        }
       });
   },
 );
@@ -73,7 +79,7 @@ router.post(
           userId: req.user._id,
           planId: req.user.plan,
         },
-        { $push: { completeList: req.params.wordId } },
+        { $addToSet: { completeList: req.params.wordId } },
         { new: true },
       )
         .then(userPlan => {

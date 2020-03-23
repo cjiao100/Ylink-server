@@ -23,7 +23,7 @@ router.get(
       })
       .catch(err => {
         res.status(500).json(err.message);
-        console.err(err);
+        throw err;
       });
   },
 );
@@ -83,7 +83,7 @@ router.post(
       })
       .catch(err => {
         res.status(500).json('异常');
-        throw new Error(err);
+        throw err;
       });
   },
 );
@@ -108,7 +108,7 @@ router.delete(
       })
       .catch(err => {
         res.status(500).json(err.message);
-        console.err(err);
+        throw err;
       });
   },
 );
