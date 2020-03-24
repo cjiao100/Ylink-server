@@ -17,7 +17,6 @@ const postCommentSchema = new Schema(
     },
     father: {
       type: Schema.Types.ObjectId,
-      default: -1,
     },
   },
   { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } },

@@ -6,10 +6,12 @@ const userPostSchema = new Schema(
     userId: {
       type: Schema.Types.ObjectId,
       required: true,
+      // ref: 'user',
     },
     postId: {
       type: Schema.Types.ObjectId,
       required: true,
+      // ref: 'post',
     },
     star: {
       type: Boolean,
@@ -23,4 +25,4 @@ const userPostSchema = new Schema(
   { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } },
 );
 
-module.exports = mongoose.model('user-post', userPostSchema);
+module.exports = mongoose.model('userpost', userPostSchema);

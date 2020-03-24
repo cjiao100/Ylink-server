@@ -4,8 +4,10 @@ const passport = require('passport');
 const Post = require('../../models/post');
 const Topic = require('../../models/topic');
 const User = require('../../models/user');
+const UserPost = require('../../models/userPost');
+const PostComment = require('../../models/postComment');
 const validatorPostInput = require('../../validator/post');
-// const validatorCommentInput = require('../../validator/comment');
+const validatorCommentInput = require('../../validator/comment');
 const router = express.Router();
 
 /**
@@ -54,6 +56,220 @@ router.post(
     }
 
     res.json(await post.save());
+  },
+);
+
+/**
+ * @description 获取帖子列表
+ */
+router.get(
+  '/list',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    const { pageNum = 0, pageSize = 10 } = req.query;
+    Post.aggregate([
+      {
+        $lookup: {
+          from: 'userposts',
+          localField: '_id',
+          foreignField: 'postId',
+          as: 'postInfo',
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userInfo',
+        },
+      },
+      {
+        $project: {
+          title: 1,
+          content: 1,
+          images: 1,
+          topicList: 1,
+          browse: 1,
+          postInfo: { star: 1, awesome: 1 },
+          userInfo: { name: 1, avatar: 1 },
+        },
+      },
+      { $skip: pageNum * pageSize },
+      { $limit: Number(pageSize) },
+      { $sort: { browse: -1 } },
+    ]).then(result => {
+      result.forEach(post => {
+        const postInfo = { star: 0, awesome: 0 };
+        post.postInfo.forEach(item => {
+          if (item.star) postInfo.star++;
+          if (item.awesome) postInfo.awesome++;
+        });
+        post.postInfo = postInfo;
+        post.userInfo = post.userInfo[0];
+      });
+      res.json(result);
+    });
+  },
+);
+
+/**
+ * @description 查看帖子详细
+ */
+router.get(
+  '/:postId',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    Post.findById(req.params.postId)
+      .then(list => res.json(list))
+      .catch(err => {
+        res.status(500).json({ message: err.message });
+      });
+  },
+);
+
+/**
+ * @description 浏览帖子
+ */
+router.put(
+  '/:postId/browse',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    Post.findByIdAndUpdate(
+      req.params.postId,
+      { $inc: { browse: 1 } },
+      { new: true },
+    )
+      .then(post => {
+        res.json(post);
+      })
+      .catch(err => {
+        res.status(500).json(err.message);
+      });
+  },
+);
+
+/**
+ * @description  点赞
+ */
+router.put(
+  '/:postId/awesome',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    UserPost.find({ userId: req.user._id, postId: req.params.postId }).then(
+      userPost => {
+        // res.json(userPost);
+        if (!userPost) {
+          const newUserPost = new UserPost({
+            userId: req.user._id,
+            postId: req.params.postId,
+            awesome: true,
+            star: false,
+          });
+
+          newUserPost.save().then(() => res.json(true));
+        } else {
+          userPost.awesome = !userPost.awesome;
+          userPost.save().then(() => res.json(true));
+        }
+      },
+    );
+  },
+);
+
+/**
+ * @description  收藏
+ */
+router.put(
+  '/:postId/star',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    UserPost.findOne({ userId: req.user._id, postId: req.params.postId }).then(
+      userPost => {
+        // res.json(userPost);
+        if (!userPost) {
+          const newUserPost = new UserPost({
+            userId: req.user._id,
+            postId: req.params.postId,
+            awesome: false,
+            star: true,
+          });
+
+          newUserPost.save().then(() => res.json(true));
+        } else {
+          userPost.star = !userPost.star;
+          userPost.save().then(() => res.json(true));
+        }
+      },
+    );
+  },
+);
+
+/**
+ * @description  评论
+ */
+router.put(
+  '/:postId/comment',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    const { errors, isValid } = validatorCommentInput(req.body);
+
+    if (!isValid) {
+      return res.status(403).json(errors);
+    }
+
+    const newComment = new PostComment({
+      postId: req.params.postId,
+      userId: req.user._id,
+      content: req.body.content,
+      father: req.body.father,
+    });
+
+    newComment
+      .save()
+      .then(comment => {
+        res.json(comment);
+      })
+      .catch(err => {
+        res.status(500).json(err);
+      });
+  },
+);
+
+/**
+ * @description  删除帖子
+ */
+router.delete(
+  '/:postId/',
+  passport.authenticate('jwt', { session: false }),
+  async (req, res) => {
+    const userPost = await UserPost.find({
+      postId: req.params.postId,
+    }).deleteMany();
+    const comment = await PostComment.find({
+      postId: req.params.postId,
+    }).deleteMany();
+    const post = await Post.findById(req.params.postId).deleteOne();
+    if (userPost.ok === 1 && comment.ok === 1 && post.ok === 1) {
+      res.json(true);
+    } else {
+      res.json(false);
+    }
+  },
+);
+
+/**
+ * @description 获取评论列表
+ */
+router.get(
+  '/:postId/comment',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    PostComment.findOne({ planId: req.body.planId, father: req.body.father })
+      .populate({ path: 'userId', model: User, select: { name: 1, avatar: 1 } })
+      .then(result => {
+        res.json(result);
+      });
   },
 );
 
