@@ -95,14 +95,19 @@ router.post('/login', (req, res) => {
           if (result) {
             const rule = { id: user.id, name: user.name };
 
-            jwt.sign(rule, keys, { expiresIn: 3600 }, (err, token) => {
-              if (err) throw err;
-              res
-                .cookie('token', `Bearer ${token}`, {
-                  httpOnly: true,
-                })
-                .json({ success: true });
-            });
+            jwt.sign(
+              rule,
+              keys,
+              { expiresIn: 7 * 24 * 60 * 60 },
+              (err, token) => {
+                if (err) throw err;
+                res.json({
+                  success: true,
+                  token: `Bearer ${token}`,
+                  expires_in: 7 * 24 * 60 * 60,
+                });
+              },
+            );
           } else {
             res.status(400).json('密码错误');
           }
@@ -148,6 +153,26 @@ router.put(
       .then(item => {
         res.json(item);
       });
+  },
+);
+
+/**
+ * @description 刷新token
+ */
+router.get(
+  '/refresh',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    const rule = { id: req.user._id, name: req.user.name };
+
+    jwt.sign(rule, keys, { expiresIn: 7 * 24 * 60 * 60 }, (err, token) => {
+      if (err) throw err;
+      res.json({
+        success: true,
+        token: `Bearer ${token}`,
+        expires_in: 7 * 24 * 60 * 60,
+      });
+    });
   },
 );
 
