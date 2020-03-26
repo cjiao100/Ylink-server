@@ -8,15 +8,15 @@ module.exports = data => {
   data.password = !isEmpty(data.password) ? data.password : '';
 
   if (!Validator.isEmail(data.email)) {
-    errors.email = '邮箱不合法';
+    errors.message = '邮箱不合法';
   }
 
   if (Validator.isEmpty(data.email)) {
-    errors.email = '邮箱不能为空';
+    errors.message = '邮箱不能为空';
   }
 
   if (Validator.isEmpty(data.password)) {
-    errors.email = '密码不能为空';
+    errors.message = '密码不能为空';
   }
 
   return {

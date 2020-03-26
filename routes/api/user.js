@@ -95,19 +95,18 @@ router.post('/login', (req, res) => {
           if (result) {
             const rule = { id: user.id, name: user.name };
 
-            jwt.sign(
-              rule,
-              keys,
-              { expiresIn: 7 * 24 * 60 * 60 },
-              (err, token) => {
-                if (err) throw err;
-                res.json({
-                  success: true,
-                  token: `Bearer ${token}`,
-                  expires_in: 7 * 24 * 60 * 60,
-                });
-              },
-            );
+            //  设置有效时长为一个小时
+            const token = jwt.sign(rule, keys, { expiresIn: 1 * 60 * 60 });
+            // 设置刷新Token为7天
+            const refreshToken = jwt.sign(rule, keys, {
+              expiresIn: 7 * 24 * 60 * 60,
+            });
+            res.json({
+              success: true,
+              access_token: `Bearer ${token}`,
+              expires_in: 1 * 60 * 60,
+              refresh_token: `Bearer ${refreshToken}`,
+            });
           } else {
             res.status(400).json('密码错误');
           }
@@ -160,18 +159,20 @@ router.put(
  * @description 刷新token
  */
 router.get(
-  '/refresh',
+  '/refresh_token',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    console.log(req.query);
+    const refreshToken = req.query.refresh_token;
+    console.log(refreshToken);
     const rule = { id: req.user._id, name: req.user.name };
-
-    jwt.sign(rule, keys, { expiresIn: 7 * 24 * 60 * 60 }, (err, token) => {
-      if (err) throw err;
-      res.json({
-        success: true,
-        token: `Bearer ${token}`,
-        expires_in: 7 * 24 * 60 * 60,
-      });
+    //  设置有效时长为一个小时
+    const token = jwt.sign(rule, keys, { expiresIn: 1 * 60 * 60 });
+    res.json({
+      success: true,
+      access_token: `Bearer ${token}`,
+      expires_in: 1 * 60 * 60,
+      refresh_token: `${refreshToken}`,
     });
   },
 );

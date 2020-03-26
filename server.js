@@ -65,11 +65,11 @@ mongoose
   .catch(err => console.log(err));
 
 app.get('/', (req, res) => {
-  res.send('Hello Word');
+  res.json({ message: 'Hello Word', success: true });
 });
 
 app.post('/', (req, res) => {
-  res.send('hello');
+  res.json({ message: 'Hello', success: true });
 });
 
 app.listen(port, () => {

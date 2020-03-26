@@ -16,13 +16,15 @@ router.get('/inquire', (req, res) => {
   const { pageNum, pageSize } = req.query;
   // 查询一周以内的文章
   // Article.find({ createTime: { $gte: Date.now() - 5 * 24 * 60 * 60 * 1000 } })
-  Article.find()
-    .skip(pageNum * pageSize)
-    .limit(Number(pageSize))
-    // .sort({ browse: 'desc', awesome: 'desc' })
-    .exec()
-    .then(list => res.json(list))
-    .catch(err => console.log(err));
+  Article.countDocuments().then(count => {
+    Article.find()
+      .skip(pageNum * pageSize)
+      .limit(Number(pageSize))
+      // .sort({ browse: 'desc', awesome: 'desc' })
+      .exec()
+      .then(list => res.json({ success: true, data: list, total: count }))
+      .catch(err => console.log(err));
+  });
 });
 
 /**
