@@ -9,10 +9,10 @@ module.exports = (id = Math.random().toString(), size = 150) => {
   md5 = md5.digest('hex');
 
   // 生成图片svg
-  let avatar = jdenticon.toSvg(md5, size);
+  let avatar = jdenticon.toPng(md5, size);
   // 将图片保存在本地服务器上
-  fs.writeFileSync(`./temp/avatar/${md5}.svg`, avatar);
+  fs.writeFileSync(`./temp/avatar/${md5}.png`, avatar);
 
   // 返回图片地址
-  return `/avatar/${md5}.svg`;
+  return `/avatar/${md5}.png`;
 };

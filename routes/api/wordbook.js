@@ -7,7 +7,7 @@ const User = require('../../models/user');
 const router = express.Router();
 
 /**
- * @description 查询单词本列表
+ * @description 查询单词本中单词列表
  */
 router.get(
   '/',
@@ -16,10 +16,13 @@ router.get(
     WordBook.findById(req.user.wordbook)
       .then(wordbook => {
         // res.json(wordbook);
-        return Word.find({ _id: wordbook.wordList });
+        return Word.find(
+          { _id: wordbook.wordList },
+          { query: 1, 'basic.explains': 1 },
+        );
       })
       .then(wordList => {
-        res.json(wordList);
+        res.json({ success: true, data: wordList });
       })
       .catch(err => {
         res.status(500).json(err.message);
@@ -52,7 +55,7 @@ router.post(
               return user.save();
             })
             .then(temp => {
-              res.json(temp);
+              res.json({ success: true, data: temp });
             })
             .catch(err => {
               console.log(err);
@@ -73,7 +76,7 @@ router.post(
               return wordbook.save();
             })
             .then(temp => {
-              res.json(temp);
+              res.json({ success: true, data: temp });
             })
             .catch(err => {
               console.log(err);

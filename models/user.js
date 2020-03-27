@@ -21,7 +21,7 @@ const UserSchema = new Schema(
     },
     identity: {
       type: String,
-      default: '0',
+      default: '1',
     },
     // 性别
     gender: {

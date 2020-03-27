@@ -132,7 +132,7 @@ router.get(
           identity: user.identity,
           avatar: user.avatar,
         };
-        res.json(info);
+        res.json({ success: true, data: info });
       })
       .catch(() => res.status(404).json('找不到用户信息'));
   },
@@ -162,9 +162,7 @@ router.get(
   '/refresh_token',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
-    console.log(req.query);
     const refreshToken = req.query.refresh_token;
-    console.log(refreshToken);
     const rule = { id: req.user._id, name: req.user.name };
     //  设置有效时长为一个小时
     const token = jwt.sign(rule, keys, { expiresIn: 1 * 60 * 60 });
