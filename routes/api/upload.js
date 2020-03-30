@@ -72,7 +72,10 @@ router.post(
       console.log(req);
       // 发生错误
       if (err instanceof multer.MulterError) {
-        res.status(500).json(errorMessage(err.code) || err.message);
+        res.status(500).json({
+          filename: req.file.originalname,
+          message: errorMessage(err.code) || err.message,
+        });
       } else if (err) {
         console.log(err);
       } else {
@@ -85,6 +88,7 @@ router.post(
               if (err) throw err;
               res.json({
                 url: `/post/${req.file.filename}.png`,
+                filename: req.file.originalname,
                 success: true,
               });
             });
