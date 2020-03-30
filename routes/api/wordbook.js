@@ -13,13 +13,17 @@ router.get(
   '/',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    const { pageNum = 0, pageSize = 1 } = req.query;
     WordBook.findById(req.user.wordbook)
       .then(wordbook => {
         // res.json(wordbook);
         return Word.find(
           { _id: wordbook.wordList },
           { query: 1, 'basic.explains': 1 },
-        );
+        )
+          .skip(pageNum * pageSize)
+          .limit(Number(pageSize))
+          .exec();
       })
       .then(wordList => {
         res.json({ success: true, data: wordList });

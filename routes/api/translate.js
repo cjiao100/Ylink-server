@@ -15,7 +15,7 @@ router.post(
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
     Word.findOne({ query: req.body.query }).then(word => {
-      if (word.length !== 0) {
+      if (word) {
         WordBook.findById(req.user.wordbook).then(wordbook => {
           const data = JSON.parse(JSON.stringify(word));
           if (wordbook) {
@@ -38,7 +38,7 @@ router.post(
             return data.save();
           })
           .then(data => {
-            res.json(data);
+            res.json({ success: true, data });
           })
           .catch(err => {
             res.status(500).json('异常');

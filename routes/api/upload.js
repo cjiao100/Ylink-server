@@ -62,4 +62,33 @@ router.post(
   },
 );
 
+const posts = upload.array('postImages', 5);
+router.post(
+  '/upload/post',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    posts(req, res, err => {
+      if (err instanceof multer.MulterError) {
+        res.status(500).json(errorMessage(err.code) || err.message);
+      } else if (err) {
+        console.log(err);
+        // 发生错误
+      } else {
+        const files = [];
+        req.files.forEach(file => {
+          fs.copyFileSync(
+            file.path,
+            `${file.destination}/post/${file.filename}.png`,
+          );
+          files.push(`/post/${file.filename}.png`);
+          fs.unlink(file.path, err => {
+            if (err) throw err;
+          });
+        });
+        res.json(files);
+      }
+    });
+  },
+);
+
 module.exports = router;
