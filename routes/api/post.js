@@ -1,5 +1,6 @@
 const express = require('express');
 const passport = require('passport');
+const mongoose = require('mongoose');
 
 const Post = require('../../models/post');
 const Topic = require('../../models/topic');
@@ -55,7 +56,7 @@ router.post(
       }
     }
 
-    res.json(await post.save());
+    res.json({ data: await post.save(), success: true });
   },
 );
 
@@ -91,6 +92,8 @@ router.get(
           images: 1,
           topicList: 1,
           browse: 1,
+          created_at: 1,
+          updated_at: 1,
           postInfo: { star: 1, awesome: 1 },
           userInfo: { name: 1, avatar: 1 },
         },
@@ -108,7 +111,7 @@ router.get(
         post.postInfo = postInfo;
         post.userInfo = post.userInfo[0];
       });
-      res.json(result);
+      res.json({ data: result, success: true });
     });
   },
 );
@@ -120,8 +123,41 @@ router.get(
   '/:postId',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
-    Post.findById(req.params.postId)
-      .then(list => res.json(list))
+    Post.aggregate()
+      .match({ _id: new mongoose.Types.ObjectId(req.params.postId) })
+      .lookup({
+        from: 'users',
+        localField: 'userId',
+        foreignField: '_id',
+        as: 'userInfo',
+      })
+      .lookup({
+        from: 'userposts',
+        localField: '_id',
+        foreignField: 'postId',
+        as: 'postInfo',
+      })
+      .project({
+        title: 1,
+        content: 1,
+        images: 1,
+        topicList: 1,
+        browse: 1,
+        created_at: 1,
+        updated_at: 1,
+        postInfo: { star: 1, awesome: 1 },
+        userInfo: { name: 1, avatar: 1 },
+      })
+      .then(result => {
+        const postInfo = { star: 0, awesome: 0 };
+        result[0].postInfo.forEach(item => {
+          if (item.star) postInfo.star++;
+          if (item.awesome) postInfo.awesome++;
+        });
+        result[0].postInfo = postInfo;
+        result[0].userInfo = result[0].userInfo[0];
+        res.json({ data: result[0], success: true });
+      })
       .catch(err => {
         res.status(500).json({ message: err.message });
       });
