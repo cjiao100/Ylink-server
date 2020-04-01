@@ -145,15 +145,21 @@ router.get(
         browse: 1,
         created_at: 1,
         updated_at: 1,
-        postInfo: { star: 1, awesome: 1 },
+        postInfo: { userId: 1, star: 1, awesome: 1 },
         userInfo: { name: 1, avatar: 1 },
       })
       .then(result => {
         const postInfo = { star: 0, awesome: 0 };
+        const currentUser = { star: false, awesome: false };
         result[0].postInfo.forEach(item => {
+          if (item.userId.toString() === req.user._id.toString()) {
+            currentUser.star = item.star;
+            currentUser.awesome = item.awesome;
+          }
           if (item.star) postInfo.star++;
           if (item.awesome) postInfo.awesome++;
         });
+        result[0].currentUser = currentUser;
         result[0].postInfo = postInfo;
         result[0].userInfo = result[0].userInfo[0];
         res.json({ data: result[0], success: true });
@@ -176,8 +182,8 @@ router.put(
       { $inc: { browse: 1 } },
       { new: true },
     )
-      .then(post => {
-        res.json(post);
+      .then(() => {
+        res.json({ success: true });
       })
       .catch(err => {
         res.status(500).json(err.message);
@@ -192,8 +198,9 @@ router.put(
   '/:postId/awesome',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
-    UserPost.find({ userId: req.user._id, postId: req.params.postId }).then(
+    UserPost.findOne({ userId: req.user._id, postId: req.params.postId }).then(
       userPost => {
+        console.log(userPost);
         // res.json(userPost);
         if (!userPost) {
           const newUserPost = new UserPost({
@@ -203,10 +210,10 @@ router.put(
             star: false,
           });
 
-          newUserPost.save().then(() => res.json(true));
+          newUserPost.save().then(() => res.json({ success: true }));
         } else {
           userPost.awesome = !userPost.awesome;
-          userPost.save().then(() => res.json(true));
+          userPost.save().then(() => res.json({ success: true }));
         }
       },
     );
@@ -231,10 +238,10 @@ router.put(
             star: true,
           });
 
-          newUserPost.save().then(() => res.json(true));
+          newUserPost.save().then(() => res.json({ success: true }));
         } else {
           userPost.star = !userPost.star;
-          userPost.save().then(() => res.json(true));
+          userPost.save().then(() => res.json({ success: true }));
         }
       },
     );
@@ -264,7 +271,7 @@ router.put(
     newComment
       .save()
       .then(comment => {
-        res.json(comment);
+        res.json({ data: comment, success: true });
       })
       .catch(err => {
         res.status(500).json(err);
