@@ -301,10 +301,10 @@ router.get(
   '/:postId/comment',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
-    PostComment.findOne({ planId: req.body.planId, father: req.body.father })
+    PostComment.find({ postId: req.params.postId })
       .populate({ path: 'userId', model: User, select: { name: 1, avatar: 1 } })
       .then(result => {
-        res.json(result);
+        res.json({ data: result, success: true });
       });
   },
 );

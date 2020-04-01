@@ -28,6 +28,7 @@ const errorMessage = code => {
       return '文件类型错误，仅支持png/jpg';
     case 'LIMIT_UNEXPECTED_FILE':
       return '文件数量超过上传上限';
+    case 'LIMIT_FIELD_VALUE':
     case 'LIMIT_FILE_SIZE':
       return '文件大小超过上传上限';
     default:
