@@ -22,6 +22,28 @@ router.get(
 );
 
 /**
+ * @description 获取计划详细
+ */
+router.get(
+  '/',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    Promise.all([
+      Plan.findById(req.user.plan),
+      UserPlan.findOne({ planId: req.user.plan, userId: req.user._id }),
+    ]).then(([plan, userPlan]) => {
+      const planInfo = {
+        name: plan.name,
+        total: plan.wordList.length,
+        complete: userPlan.completeList.length,
+        today: userPlan.today,
+      };
+      res.json({ data: planInfo, success: true });
+    });
+  },
+);
+
+/**
  * @description 添加计划
  */
 router.post(
@@ -189,11 +211,11 @@ router.post(
  * @description 重新开始计划
  */
 router.put(
-  '/reload',
+  '/:planId/reload',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
     UserPlan.findOneAndUpdate(
-      { userId: req.user._id, planId: req.user.plan },
+      { userId: req.user._id, planId: req.params.planId },
       { $set: { completeList: [] } },
       { new: true },
     )

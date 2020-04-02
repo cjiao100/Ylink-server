@@ -21,7 +21,12 @@ router.get(
           item.postList.map(post => (browse += post.browse));
           item.browse = browse;
         });
-        res.json(result.sort((a, b) => (a.browse > b.browse ? -1 : 1)));
+        res.json({
+          data: result
+            .sort((a, b) => (a.browse > b.browse ? -1 : 1))
+            .slice(0, 4),
+          success: true,
+        });
       });
   },
 );

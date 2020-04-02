@@ -80,6 +80,7 @@ router.post(
           planId: req.user.plan,
         },
         { $addToSet: { completeList: req.params.wordId } },
+        { $inc: { today: 1 } },
         { new: true },
       )
         .then(userPlan => {
