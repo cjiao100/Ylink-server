@@ -100,7 +100,7 @@ router.get(
       },
       { $skip: pageNum * pageSize },
       { $limit: Number(pageSize) },
-      { $sort: { browse: -1 } },
+      { $sort: { created_at: -1, browse: -1 } },
     ]).then(result => {
       result.forEach(post => {
         const postInfo = { star: 0, awesome: 0 };
