@@ -5,12 +5,8 @@ const userAndPlanSchame = new Schame(
   {
     userId: mongoose.Types.ObjectId,
     planId: mongoose.Types.ObjectId,
-    today: {
-      type: Number,
-      default: 0,
-    },
     completeList: {
-      type: [Schame.Types.ObjectId],
+      type: [Object],
       default: [],
     },
   },

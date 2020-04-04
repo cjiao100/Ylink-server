@@ -26,14 +26,15 @@ router.get(
           const complete = [...userPlan.completeList];
           const word = [...plan.wordList];
           const undone = word.filter(
-            v => !complete.some(item => item.toString() == v.toString()),
+            v => !complete.some(item => item.word.toString() == v.toString()),
           );
+          console.log(complete);
           return random(Word, undone);
         }
       })
       .then(item => {
         if (!item) {
-          throw { success: true, status: 200, message: '计划完成' };
+          throw { success: true, status: 200, message: '计划完成', data: null };
         } else {
           word = item;
           return randomList(Word, 4, item._id);
@@ -54,7 +55,7 @@ router.get(
           speech: word.basic['uk-speech'],
           answer: wordList,
         };
-        res.json(result);
+        res.json({ success: true, data: result });
       })
       .catch(err => {
         if (err.success) {
@@ -79,19 +80,22 @@ router.post(
           userId: req.user._id,
           planId: req.user.plan,
         },
-        { $addToSet: { completeList: req.params.wordId } },
-        { $inc: { today: 1 } },
+        {
+          $addToSet: {
+            completeList: { word: req.params.wordId, date: new Date() },
+          },
+        },
         { new: true },
       )
-        .then(userPlan => {
-          res.json(userPlan);
+        .then(() => {
+          res.json({ success: true, message: '回答正确' });
         })
         .catch(err => {
           res.status(500).json(err);
           throw err;
         });
     } else {
-      res.json({ message: '回答错误' });
+      res.json({ success: true, message: '回答错误' });
     }
   },
 );

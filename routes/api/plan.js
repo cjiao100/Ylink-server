@@ -55,11 +55,23 @@ router.get(
       Plan.findById(req.user.plan),
       UserPlan.findOne({ planId: req.user.plan, userId: req.user._id }),
     ]).then(([plan, userPlan]) => {
+      const today = userPlan.completeList.filter(item => {
+        const date = new Date(item.date);
+        const day = date.getDate();
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const currentDay = new Date().getDate();
+        const currentMonth = new Date().getMonth() + 1;
+        const currentYear = new Date().getFullYear();
+        return (
+          day === currentDay && month === currentMonth && year === currentYear
+        );
+      });
       const planInfo = {
         name: plan.name,
         total: plan.wordList.length,
         complete: userPlan.completeList.length,
-        today: userPlan.today,
+        today: today.length,
       };
       res.json({ data: planInfo, success: true });
     });
