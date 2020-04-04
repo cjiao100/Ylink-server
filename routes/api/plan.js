@@ -35,14 +35,11 @@ router.get(
           },
         },
       })
-      .project({
-        wordList: 1,
-        name: 1,
-        completeList: '$userPlan.completeList',
+      .then(planList => {
+        res.json({ success: true, data: planList });
       })
-      .unwind('$completeList')
-      .then(t => {
-        res.json(t);
+      .catch(err => {
+        res.status(500).json(err);
       });
   },
 );
@@ -220,9 +217,9 @@ router.post(
                 userId: user._id,
                 planId: req.params.planId,
               });
-              newUserPlan.save().then(() => res.json(true));
+              newUserPlan.save().then(() => res.json({ success: true }));
             } else {
-              res.json(true);
+              res.json({ success: true });
             }
           },
         );
