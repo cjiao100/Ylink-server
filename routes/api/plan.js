@@ -15,9 +15,35 @@ router.get(
   '/list',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
-    Plan.find().then(planList => {
-      res.json(planList);
-    });
+    Plan.aggregate()
+      .lookup({
+        from: 'user-plans',
+        localField: '_id',
+        foreignField: 'planId',
+        as: 'userPlan',
+      })
+      .project({
+        wordList: 1,
+        name: 1,
+        userPlan: {
+          $filter: {
+            input: '$userPlan',
+            as: 'userPlan',
+            cond: {
+              $eq: ['$$userPlan.userId', req.user._id],
+            },
+          },
+        },
+      })
+      .project({
+        wordList: 1,
+        name: 1,
+        completeList: '$userPlan.completeList',
+      })
+      .unwind('$completeList')
+      .then(t => {
+        res.json(t);
+      });
   },
 );
 
