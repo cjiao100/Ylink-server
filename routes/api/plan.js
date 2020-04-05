@@ -45,6 +45,28 @@ router.get(
 );
 
 /**
+ * @description 获取我的计划列表
+ */
+router.get(
+  '/list/my',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    UserPlan.aggregate()
+      .match({ userId: req.user._id })
+      .lookup({
+        from: 'plans',
+        localField: 'planId',
+        foreignField: '_id',
+        as: 'plan',
+      })
+      .unwind('plan')
+      .then(result => {
+        res.json({ data: result, success: true });
+      });
+  },
+);
+
+/**
  * @description 获取计划详细
  */
 router.get(
