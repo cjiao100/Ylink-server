@@ -117,6 +117,42 @@ router.get(
 );
 
 /**
+ * @description 获取我的帖子列表
+ */
+router.get(
+  '/list/my',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    Post.aggregate()
+      .match({ userId: req.user._id })
+      .lookup({
+        from: 'users',
+        localField: 'userId',
+        foreignField: '_id',
+        as: 'userInfo',
+      })
+      .unwind('userInfo')
+      .project({
+        title: 1,
+        content: 1,
+        images: 1,
+        topicList: 1,
+        browse: 1,
+        created_at: 1,
+        updated_at: 1,
+        userInfo: { name: 1, avatar: 1 },
+      })
+      .sort({ created_at: -1, browse: -1 })
+      .then(result => {
+        res.json({ data: result, success: true });
+      })
+      .catch(err => {
+        res.status(500).json(err);
+      });
+  },
+);
+
+/**
  * @description 查看帖子详细
  */
 router.get(

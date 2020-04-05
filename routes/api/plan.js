@@ -62,6 +62,9 @@ router.get(
       .unwind('plan')
       .then(result => {
         res.json({ data: result, success: true });
+      })
+      .catch(err => {
+        res.status(500).json(err);
       });
   },
 );
