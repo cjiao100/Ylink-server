@@ -60,15 +60,23 @@ router.post(
  * $ GET ylink/article/:id
  * @description 查询文章接口
  */
-router.get('/:id', (req, res) => {
-  Article.findById(req.params.id)
-    .then(article => {
-      res.json({ data: article, success: true });
-    })
-    .catch(err => {
-      res.status(500).json(err.message);
-    });
-});
+router.get(
+  '/:id',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    Article.findById(req.params.id)
+      .then(article => {
+        article = JSON.parse(JSON.stringify(article));
+        article.current = {
+          awesome: article.awesome.includes(req.user._id.toString()),
+        };
+        res.json({ data: article, success: true });
+      })
+      .catch(err => {
+        res.status(500).json(err.message);
+      });
+  },
+);
 
 /**
  * $ post ylink/article/:id/comment
@@ -133,7 +141,9 @@ router.post(
           $push: { children: comment._id },
         }),
       )
-      .then(() => res.json(true))
+      .then(() => {
+        res.json({ success: true });
+      })
       .catch(err => res.status(500).json(err.message));
   },
 );
@@ -236,17 +246,33 @@ router.put(
   (req, res) => {
     Article.findById(req.params.id).then(article => {
       if (article.awesome.includes(req.user._id)) {
-        res.json('yb');
+        User.updateOne(
+          { _id: req.user._id },
+          { $pull: { awsome: req.user.id } },
+        )
+          .then(() => {
+            const index = article.awesome.indexOf(req.user._id);
+            article.awesome.splice(index, 1);
+            article
+              .save()
+              .then(() => res.json({ success: true }))
+              .catch(err => res.json(err.message));
+          })
+          .catch(err => res.json(err.message));
+      } else {
+        User.updateOne(
+          { _id: req.user._id },
+          { $push: { awsome: req.user.id } },
+        )
+          .then(() => {
+            article.awesome.push(req.user._id);
+            article
+              .save()
+              .then(() => res.json({ success: true }))
+              .catch(err => res.json(err.message));
+          })
+          .catch(err => res.json(err.message));
       }
-      User.updateOne({ _id: req.user._id }, { $push: { awsome: req.user.id } })
-        .then(() => {
-          article.awesome.push(req.user._id);
-          article
-            .save()
-            .then(() => res.json('success'))
-            .catch(err => res.json(err.message));
-        })
-        .catch(err => res.json(err.message));
     });
   },
 );
