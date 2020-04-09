@@ -153,6 +153,66 @@ router.get(
 );
 
 /**
+ * @description 获取收藏的帖子
+ */
+router.get(
+  '/list/star',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    UserPost.aggregate()
+      .match({ userId: req.user._id, star: true })
+      .project({
+        postId: 1,
+      })
+      .lookup({
+        from: 'posts',
+        localField: 'postId',
+        foreignField: '_id',
+        as: 'post',
+      })
+      .lookup({
+        from: 'users',
+        localField: 'post.userId',
+        foreignField: '_id',
+        as: 'user',
+      })
+      .lookup({
+        from: 'userposts',
+        localField: 'postId',
+        foreignField: 'postId',
+        as: 'postInfo',
+      })
+      .unwind('post')
+      .unwind('user')
+      .project({
+        post: 1,
+        user: {
+          name: 1,
+          avatar: 1,
+        },
+        postInfo: {
+          star: 1,
+          awesome: 1,
+        },
+      })
+      .then(result => {
+        result.forEach(post => {
+          const postInfo = { star: 0, awesome: 0 };
+          post.postInfo.forEach(item => {
+            if (item.star) postInfo.star++;
+            if (item.awesome) postInfo.awesome++;
+          });
+          post.postInfo = postInfo;
+        });
+        res.json({ data: result, success: true });
+      })
+      .catch(err => {
+        res.status(500).json(err);
+      });
+  },
+);
+
+/**
  * @description 查看帖子详细
  */
 router.get(
@@ -236,7 +296,7 @@ router.put(
   (req, res) => {
     UserPost.findOne({ userId: req.user._id, postId: req.params.postId }).then(
       userPost => {
-        console.log(userPost);
+        // console.log(userPost);
         // res.json(userPost);
         if (!userPost) {
           const newUserPost = new UserPost({
