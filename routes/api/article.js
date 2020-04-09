@@ -63,7 +63,7 @@ router.post(
 router.get('/:id', (req, res) => {
   Article.findById(req.params.id)
     .then(article => {
-      res.json(article);
+      res.json({ data: article, success: true });
     })
     .catch(err => {
       res.status(500).json(err.message);
@@ -98,7 +98,7 @@ router.post(
         }),
       )
       .then(() => {
-        res.json(true);
+        res.json({ success: true });
       })
       .catch(err => {
         res.status(500).json(err.message);
@@ -146,36 +146,38 @@ router.get(
   '/:id/comment/list',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
-    Comment.find({ articleId: req.params.id }).then(commentList => {
-      const subcomments = JSON.parse(
-        JSON.stringify(commentList.filter(item => item.commentId)),
-      );
-      const comments = JSON.parse(
-        JSON.stringify(commentList.filter(item => !item.commentId)),
-      );
+    Comment.find({ articleId: req.params.id })
+      .populate({ path: 'userId', model: User, select: { name: 1, avatar: 1 } })
+      .then(commentList => {
+        const subcomments = JSON.parse(
+          JSON.stringify(commentList.filter(item => item.commentId)),
+        );
+        const comments = JSON.parse(
+          JSON.stringify(commentList.filter(item => !item.commentId)),
+        );
 
-      // 将一维数组转为树状结构
-      const translator = (comments, subcomments) => {
-        comments.forEach(comment => {
-          subcomments.forEach((subcomment, index) => {
-            if (subcomment.commentId.toString() === comment._id.toString()) {
-              let temp = JSON.parse(JSON.stringify(subcomments));
-              temp.splice(index, -1);
-              translator([subcomment], temp);
-              if (typeof comment.childrens !== 'undefined') {
-                comment.childrens.push(subcomment);
-              } else {
-                comment.childrens = [subcomment];
+        // 将一维数组转为树状结构
+        const translator = (comments, subcomments) => {
+          comments.forEach(comment => {
+            subcomments.forEach((subcomment, index) => {
+              if (subcomment.commentId.toString() === comment._id.toString()) {
+                let temp = JSON.parse(JSON.stringify(subcomments));
+                temp.splice(index, -1);
+                translator([subcomment], temp);
+                if (typeof comment.childrens !== 'undefined') {
+                  comment.childrens.push(subcomment);
+                } else {
+                  comment.childrens = [subcomment];
+                }
               }
-            }
+            });
+            delete comment.children;
           });
-          delete comment.children;
-        });
-      };
+        };
 
-      translator(comments, subcomments);
-      res.json(comments);
-    });
+        translator(comments, subcomments);
+        res.json({ success: true, data: comments });
+      });
   },
 );
 
