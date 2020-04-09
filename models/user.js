@@ -41,11 +41,6 @@ const UserSchema = new Schema(
       type: [Schema.Types.ObjectId],
       default: [],
     },
-    // 浏览历史
-    browse: {
-      type: [Schema.Types.ObjectId],
-      default: [],
-    },
     lastLogin: {
       type: Date,
       default: Date.now(),

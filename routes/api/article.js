@@ -284,23 +284,11 @@ router.put(
   '/:id/browse',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
-    Article.find({ _id: req.params.id, browse: req.user._id }).then(article => {
-      if (article.length === 0) {
-        Article.updateOne(
-          { _id: req.params.id },
-          { $push: { browse: req.user._id } },
-        )
-          .then(() =>
-            User.updateOne(
-              { _id: req.user._id },
-              { $push: { browse: req.params.id } },
-            ),
-          )
-          .then(() => res.json(true));
-      } else {
-        return res.json(false);
-      }
-    });
+    Article.updateOne({ _id: req.params.id }, { $inc: { browse: 1 } })
+      .then(() => res.json({ success: true }))
+      .catch(err => {
+        res.status(500).json(err);
+      });
   },
 );
 

@@ -22,8 +22,8 @@ const articleSchema = new Schema(
       type: String,
     },
     browse: {
-      type: [Schema.Types.ObjectId],
-      default: [],
+      type: Number,
+      default: 0,
     },
     comment: {
       type: [Object],
