@@ -14,7 +14,7 @@ router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
-    Word.findOne({ query: req.body.query }).then(word => {
+    Word.findOne({ query: req.body.query.toLowerCase() }).then(word => {
       if (word) {
         WordBook.findById(req.user.wordbook).then(wordbook => {
           const data = JSON.parse(JSON.stringify(word));
@@ -30,7 +30,7 @@ router.post(
         translation({ query, from, to })
           .then(result => {
             const data = new Word({
-              query: result.data.query,
+              query: result.data.query.toLowerCase,
               translation: result.data.translation,
               basic: result.data.basic,
               web: result.data.web,
