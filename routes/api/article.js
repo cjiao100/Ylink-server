@@ -6,6 +6,7 @@ const User = require('../../models/user');
 const Comment = require('../../models/comment');
 const validatorArticleInput = require('../../validator/article');
 const validatorCommentInput = require('../../validator/comment');
+const refreshUserLastDate = require('../../util/refreshLastDate');
 const router = express.Router();
 
 /**
@@ -35,6 +36,7 @@ router.post(
   '/add',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     const { errors, isValid } = validatorArticleInput(req.body);
 
     if (!isValid) {
@@ -64,6 +66,7 @@ router.get(
   '/:id',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     Article.findById(req.params.id)
       .then(article => {
         article = JSON.parse(JSON.stringify(article));
@@ -86,6 +89,7 @@ router.post(
   '/:id/comment',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     const { errors, isValid } = validatorCommentInput(req.body);
 
     if (!isValid) {
@@ -122,6 +126,7 @@ router.post(
   '/:id/comment/:commentId',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     const { errors, isValid } = validatorCommentInput(req.body);
     if (!isValid) {
       return res.status(403).json(errors);
@@ -156,6 +161,7 @@ router.get(
   '/:id/comment/list',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     Comment.find({ articleId: req.params.id })
       .populate({ path: 'userId', model: User, select: { name: 1, avatar: 1 } })
       .then(commentList => {
@@ -199,6 +205,7 @@ router.get(
   '/:id/comment/list/:commentId',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     Comment.find({ articleId: req.params.id }).then(commentList => {
       const subcomments = JSON.parse(
         JSON.stringify(commentList.filter(item => item.commentId)),
@@ -244,6 +251,7 @@ router.put(
   '/:id/awesome',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     Article.findById(req.params.id).then(article => {
       if (article.awesome.includes(req.user._id)) {
         User.updateOne(
@@ -284,6 +292,7 @@ router.put(
   '/:id/browse',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     Article.updateOne({ _id: req.params.id }, { $inc: { browse: 1 } })
       .then(() => res.json({ success: true }))
       .catch(err => {
@@ -300,6 +309,7 @@ router.delete(
   '/:id',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     Article.findByIdAndDelete(req.params.id)
       .then(article => {
         if (article) {

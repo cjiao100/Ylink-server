@@ -5,6 +5,7 @@ const Word = require('../../models/word');
 const Plan = require('../../models/plan');
 const UserPlan = require('../../models/userPlan');
 const { random, randomList } = require('../../util/random');
+const refreshUserLastDate = require('../../util/refreshLastDate');
 const router = express.Router();
 
 /**
@@ -14,6 +15,7 @@ router.get(
   '/',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     let word = {};
     Promise.all([
       Plan.findById(req.user.plan),
@@ -74,6 +76,7 @@ router.post(
   '/result/:wordId',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     if (req.body.result) {
       UserPlan.findOneAndUpdate(
         {

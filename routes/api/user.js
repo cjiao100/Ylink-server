@@ -8,6 +8,7 @@ const keys = require('../../config/keys').secretOrKey;
 const validatorLoginInput = require('../../validator/login');
 const validatorRegisterInput = require('../../validator/register');
 const defaultAvatar = require('../../util/avatar');
+const refreshUserLastDate = require('../../util/refreshLastDate');
 const router = express.Router();
 
 /**
@@ -90,6 +91,7 @@ router.post('/login', (req, res) => {
       if (!user) {
         return res.status(400).json('该邮箱未注册');
       } else {
+        refreshUserLastDate(user._id);
         bcrypt.compare(req.body.password, user.password, (err, result) => {
           if (err) throw err;
           if (result) {
@@ -146,6 +148,7 @@ router.put(
   '/update',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     User.where({ _id: req.user._id })
       .update({ $set: req.body })
       .exec()
@@ -162,6 +165,7 @@ router.get(
   '/refresh_token',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     const refreshToken = req.query.refresh_token;
     const rule = { id: req.user._id, name: req.user.name };
     //  设置有效时长为一个小时

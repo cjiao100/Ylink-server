@@ -1,8 +1,8 @@
 const express = require('express');
 const passport = require('passport');
 
-// const Wordbook = require('../../models/wordbook');
 const Word = require('../../models/word');
+const refreshUserLastDate = require('../../util/refreshLastDate');
 const router = express.Router();
 
 /**
@@ -12,6 +12,7 @@ router.get(
   '/list/noplan',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     Word.find()
       .then(wordList => {
         res.json(wordList.filter(item => !item.planId));

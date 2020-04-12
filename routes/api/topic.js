@@ -3,6 +3,7 @@ const passport = require('passport');
 
 const Post = require('../../models/post');
 const Topic = require('../../models/topic');
+const refreshUserLastDate = require('../../util/refreshLastDate');
 const router = express.Router();
 
 /**
@@ -12,6 +13,7 @@ router.get(
   '/hot',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     Topic.find()
       .populate({ path: 'postList', model: Post, select: { browse: 1 } })
       .then(result => {

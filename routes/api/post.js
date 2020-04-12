@@ -9,6 +9,7 @@ const UserPost = require('../../models/userPost');
 const PostComment = require('../../models/postComment');
 const validatorPostInput = require('../../validator/post');
 const validatorCommentInput = require('../../validator/comment');
+const refreshUserLastDate = require('../../util/refreshLastDate');
 const router = express.Router();
 
 /**
@@ -18,6 +19,7 @@ router.post(
   '/add',
   passport.authenticate('jwt', { session: false }),
   async (req, res) => {
+    refreshUserLastDate(req.user._id);
     const { errors, isValid } = validatorPostInput(req.body);
 
     if (!isValid) {
@@ -67,6 +69,7 @@ router.get(
   '/list',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     const { pageNum = 0, pageSize = 10 } = req.query;
     Post.aggregate([
       {
@@ -123,6 +126,7 @@ router.get(
   '/list/my',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     Post.aggregate()
       .match({ userId: req.user._id })
       .lookup({
@@ -159,6 +163,7 @@ router.get(
   '/list/star',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     UserPost.aggregate()
       .match({ userId: req.user._id, star: true })
       .project({
@@ -219,6 +224,7 @@ router.get(
   '/:postId',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     Post.aggregate()
       .match({ _id: new mongoose.Types.ObjectId(req.params.postId) })
       .lookup({
@@ -273,6 +279,7 @@ router.put(
   '/:postId/browse',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     Post.findByIdAndUpdate(
       req.params.postId,
       { $inc: { browse: 1 } },
@@ -294,6 +301,7 @@ router.put(
   '/:postId/awesome',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     UserPost.findOne({ userId: req.user._id, postId: req.params.postId }).then(
       userPost => {
         // console.log(userPost);
@@ -323,6 +331,7 @@ router.put(
   '/:postId/star',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     UserPost.findOne({ userId: req.user._id, postId: req.params.postId }).then(
       userPost => {
         // res.json(userPost);
@@ -351,6 +360,7 @@ router.put(
   '/:postId/comment',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     const { errors, isValid } = validatorCommentInput(req.body);
 
     if (!isValid) {
@@ -382,6 +392,7 @@ router.delete(
   '/:postId/',
   passport.authenticate('jwt', { session: false }),
   async (req, res) => {
+    refreshUserLastDate(req.user._id);
     const userPost = await UserPost.find({
       postId: req.params.postId,
     }).deleteMany();
@@ -404,6 +415,7 @@ router.get(
   '/:postId/comment',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     PostComment.find({ postId: req.params.postId })
       .populate({ path: 'userId', model: User, select: { name: 1, avatar: 1 } })
       .then(result => {

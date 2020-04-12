@@ -4,6 +4,7 @@ const passport = require('passport');
 const WordBook = require('../../models/wordbook');
 const Word = require('../../models/word');
 const User = require('../../models/user');
+const refreshUserLastDate = require('../../util/refreshLastDate');
 const router = express.Router();
 
 /**
@@ -13,6 +14,7 @@ router.get(
   '/',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     const { pageNum = 0, pageSize = 1 } = req.query;
     WordBook.findById(req.user.wordbook)
       .then(wordbook => {
@@ -42,7 +44,7 @@ router.post(
   '/add',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
-    // console.log(req.body);
+    refreshUserLastDate(req.user._id);
     if (!req.body.wordId) {
       return res.status(400).json({ message: 'wordId不可为空' });
     }
@@ -102,6 +104,7 @@ router.delete(
   '/delete/:wordId',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     WordBook.findById(req.user.wordbook)
       .then(wordbook => {
         wordbook.wordList = wordbook.wordList.filter(

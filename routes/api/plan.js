@@ -6,6 +6,7 @@ const Word = require('../../models/word');
 const User = require('../../models/user');
 const UserPlan = require('../../models/userPlan');
 const validatorPlanInput = require('../../validator/plan');
+const refreshUserLastDate = require('../../util/refreshLastDate');
 const router = express.Router();
 
 /**
@@ -15,6 +16,7 @@ router.get(
   '/list',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     Plan.aggregate()
       .lookup({
         from: 'user-plans',
@@ -51,6 +53,7 @@ router.get(
   '/list/my',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     UserPlan.aggregate()
       .match({ userId: req.user._id })
       .lookup({
@@ -76,6 +79,7 @@ router.get(
   '/',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     Promise.all([
       Plan.findById(req.user.plan),
       UserPlan.findOne({ planId: req.user.plan, userId: req.user._id }),
@@ -110,6 +114,7 @@ router.post(
   '/add',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     const { errors, isValid } = validatorPlanInput(req.body);
 
     if (!isValid) {
@@ -139,6 +144,7 @@ router.put(
   '/config/:planId',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     Plan.findByIdAndUpdate(
       req.params.planId,
       {
@@ -175,6 +181,7 @@ router.put(
   '/config/:planId/delete',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     let deleteWordList = JSON.parse(req.body.wordList);
     Plan.findById(req.params.planId)
       .then(plan => {
@@ -207,6 +214,7 @@ router.delete(
   '/:planId',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     Plan.findByIdAndDelete(req.params.planId)
       .then(plan => {
         if (plan) {
@@ -239,6 +247,7 @@ router.post(
   '/select/:planId',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     User.findByIdAndUpdate(
       req.user._id,
       {
@@ -274,6 +283,7 @@ router.put(
   '/:planId/reload',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     UserPlan.findOneAndUpdate(
       { userId: req.user._id, planId: req.params.planId },
       { $set: { completeList: [] } },

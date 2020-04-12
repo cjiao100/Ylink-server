@@ -4,12 +4,14 @@ const multer = require('multer');
 const fs = require('fs');
 const router = express.Router();
 const { upload, errorMessage } = require('../../config/multer');
+const refreshUserLastDate = require('../../util/refreshLastDate');
 
 const avatar = upload.single('avatar');
 router.post(
   '/upload/avatar',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     avatar(req, res, err => {
       // 发生错误
       if (err instanceof multer.MulterError) {
@@ -38,6 +40,7 @@ router.post(
   '/upload/article',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     article(req, res, err => {
       if (err instanceof multer.MulterError) {
         res.status(500).json(errorMessage(err.code) || err.message);
@@ -67,6 +70,7 @@ router.post(
   '/upload/post',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    refreshUserLastDate(req.user._id);
     posts(req, res, err => {
       // 发生错误
       if (err instanceof multer.MulterError) {
