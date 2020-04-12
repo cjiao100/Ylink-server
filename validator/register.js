@@ -2,7 +2,7 @@ const Validator = require('validator');
 const isEmpty = require('./is-empty');
 
 module.exports = data => {
-  let errors = {};
+  let errors = '';
 
   data.name = !isEmpty(data.name) ? data.name : '';
   data.email = !isEmpty(data.email) ? data.email : '';
@@ -10,35 +10,35 @@ module.exports = data => {
   data.password2 = !isEmpty(data.password2) ? data.password : '';
 
   if (!Validator.isLength(data.name, { min: 2, max: 30 })) {
-    errors.name = '名字的长度不小于2位大于30位';
+    errors = '名字的长度不小于2位大于30位';
   }
 
   if (Validator.isEmpty(data.name)) {
-    errors.name = '名字不能为空';
+    errors = '名字不能为空';
   }
 
   if (!Validator.isEmail(data.email)) {
-    errors.email = '邮箱不合法';
+    errors = '邮箱不合法';
   }
 
   if (Validator.isEmpty(data.email)) {
-    errors.email = '邮箱不能为空';
+    errors = '邮箱不能为空';
   }
 
   if (Validator.isEmpty(data.password)) {
-    errors.password = '密码不能为空';
+    errors = '密码不能为空';
   }
 
   if (Validator.isEmpty(data.password2)) {
-    errors.password2 = '确认密码不能为空';
+    errors = '确认密码不能为空';
   }
 
   if (!Validator.isLength(data.password, { min: 6, max: 20 })) {
-    errors.password = '密码长度不小于6位大于20位';
+    errors = '密码长度不小于6位大于20位';
   }
 
   if (!Validator.equals(data.password, data.password2)) {
-    errors.password2 = '密码不一致';
+    errors = '密码不一致';
   }
 
   return {

@@ -225,7 +225,7 @@ router.delete(
             UserPlan.deleteOne({ planId: plan._id }),
           ]);
         } else {
-          res.status(400).json({ message: '没有找到计划' });
+          res.status(400).json('没有找到计划');
         }
       })
       .then(result => {

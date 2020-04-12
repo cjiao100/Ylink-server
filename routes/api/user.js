@@ -44,38 +44,44 @@ router.get(
  * @description 用户注册接口
  */
 router.post('/register', (req, res) => {
-  const { errors, isValid } = validatorRegisterInput(req.body);
+  UserVerify.findOne({ email: req.body.email }).then(verify => {
+    if (verify.code === req.body.code) {
+      const { errors, isValid } = validatorRegisterInput(req.body);
 
-  if (!isValid) {
-    return res.status(400).json(errors);
-  }
-
-  User.findOne({ email: req.body.email })
-    .then(user => {
-      if (user) {
-        return res.status(400).json('邮箱已被注册');
-      } else {
-        const newUser = new User({
-          name: req.body.name,
-          email: req.body.email,
-          password: req.body.password,
-          avatar: defaultAvatar(req.body.email),
-        });
-
-        bcrypt.genSalt(10, (err, salt) => {
-          bcrypt.hash(newUser.password, salt, (err, hash) => {
-            if (err) throw err;
-            newUser.password = hash;
-
-            newUser
-              .save()
-              .then(user => res.json(user))
-              .catch(err => console.log(err));
-          });
-        });
+      if (!isValid) {
+        return res.status(400).json(errors);
       }
-    })
-    .catch(err => console.log(err));
+
+      User.findOne({ email: req.body.email })
+        .then(user => {
+          if (user) {
+            return res.status(400).json('邮箱已被注册');
+          } else {
+            const newUser = new User({
+              name: req.body.name,
+              email: req.body.email,
+              password: req.body.password,
+              avatar: defaultAvatar(req.body.email),
+            });
+
+            bcrypt.genSalt(10, (err, salt) => {
+              bcrypt.hash(newUser.password, salt, (err, hash) => {
+                if (err) throw err;
+                newUser.password = hash;
+
+                newUser
+                  .save()
+                  .then(user => res.json({ success: true, data: user }))
+                  .catch(err => console.log(err));
+              });
+            });
+          }
+        })
+        .catch(err => console.log(err));
+    } else {
+      res.status(400).json('验证码错误');
+    }
+  });
 });
 
 /**

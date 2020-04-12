@@ -46,7 +46,7 @@ router.post(
   (req, res) => {
     refreshUserLastDate(req.user._id);
     if (!req.body.wordId) {
-      return res.status(400).json({ message: 'wordId不可为空' });
+      return res.status(400).json('wordId不可为空');
     }
     User.findById(req.user._id)
       .then(user => {
