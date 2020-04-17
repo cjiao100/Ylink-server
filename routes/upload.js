@@ -3,12 +3,12 @@ const passport = require('passport');
 const multer = require('multer');
 const fs = require('fs');
 const router = express.Router();
-const { upload, errorMessage } = require('../../config/multer');
-const refreshUserLastDate = require('../../util/refreshLastDate');
+const { upload, errorMessage } = require('../config/multer');
+const refreshUserLastDate = require('../util/refreshLastDate');
 
 const avatar = upload.single('avatar');
 router.post(
-  '/upload/avatar',
+  '/avatar',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
     refreshUserLastDate(req.user._id);
@@ -37,7 +37,7 @@ router.post(
 
 const article = upload.array('photos', 5);
 router.post(
-  '/upload/article',
+  '/article',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
     refreshUserLastDate(req.user._id);
