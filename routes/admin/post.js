@@ -3,6 +3,7 @@ const passport = require('passport');
 
 const User = require('../../models/user');
 const Post = require('../../models/post');
+const Topic = require('../../models/topic');
 const router = express.Router();
 
 /**
@@ -26,6 +27,12 @@ router.get(
         foreignField: 'postId',
         as: 'postInfo',
       })
+      .lookup({
+        from: 'post-comments',
+        localField: '_id',
+        foreignField: 'postId',
+        as: 'comment',
+      })
       .unwind('userInfo')
       .sort({ created_at: 'desc' })
       .skip(pageNum * pageSize)
@@ -33,16 +40,18 @@ router.get(
       .project({
         title: 1,
         browse: 1,
-        postInfo: { star: 1, awesome: 1 },
-        userInfo: { name: 1, avatar: 1 },
+        postInfo: { awesome: 1 },
+        userInfo: { name: 1 },
+        comment: { _id: 1 },
       });
     postList.forEach(post => {
-      const postInfo = { star: 0, awesome: 0 };
+      const postInfo = { awesome: 0 };
       post.postInfo.forEach(item => {
-        if (item.star) postInfo.star++;
         if (item.awesome) postInfo.awesome++;
       });
-      post.postInfo = postInfo;
+      delete post.postInfo;
+      post.awesome = postInfo.awesome;
+      post.comment = post.comment.length;
     });
     res.json(postList);
   },
@@ -63,6 +72,32 @@ router.get(
       })
       .sort({ browse: 'desc' })
       .limit(5);
+
+    res.json(postList);
+  },
+);
+
+/**
+ * @description 获取热门话题
+ */
+router.get(
+  '/topic/hot',
+  passport.authenticate('jwt', { session: false }),
+  async (req, res) => {
+    const postList = await Topic.find()
+      .populate({
+        path: 'postList',
+        model: Post,
+        select: { browse: 1 },
+      })
+      // .sort({ browse: 'desc' })
+      .limit(5);
+
+    postList.forEach(item => {
+      let browse = 0;
+      item.postList.map(post => (browse += post.browse));
+      item.browse = browse;
+    });
 
     res.json(postList);
   },
