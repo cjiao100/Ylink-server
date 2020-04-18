@@ -16,7 +16,10 @@ router.post(
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
     refreshUserLastDate(req.user._id);
-    Word.findOne({ query: req.body.query.toLowerCase() }).then(word => {
+    Word.findOneAndUpdate(
+      { query: req.body.query.toLowerCase() },
+      { updated_at: new Date() },
+    ).then(word => {
       if (word) {
         WordBook.findById(req.user.wordbook).then(wordbook => {
           const data = JSON.parse(JSON.stringify(word));

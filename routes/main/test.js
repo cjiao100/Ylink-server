@@ -30,7 +30,6 @@ router.get(
           const undone = word.filter(
             v => !complete.some(item => item.word.toString() == v.toString()),
           );
-          console.log(complete);
           return random(Word, undone);
         }
       })

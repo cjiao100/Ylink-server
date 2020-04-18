@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const passport = require('passport');
 
 const User = require('../../models/user');
 const keys = require('../../config/keys').secretOrKey;
@@ -21,7 +22,6 @@ router.post('/login', (req, res) => {
 
   User.findOne({ email: req.body.email })
     .then(user => {
-      console.log(user.identity);
       if (!user) {
         return res.status(400).json('该邮箱未注册');
       } else if (user.identity !== '0') {
@@ -54,5 +54,21 @@ router.post('/login', (req, res) => {
     })
     .catch(err => console.log(err));
 });
+
+/**
+ * @description 获取用户简略信息
+ */
+router.get(
+  '/simple',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    const simple = {
+      name: req.user.name,
+      email: req.user.email,
+      avatar: req.user.avatar,
+    };
+    res.json(simple);
+  },
+);
 
 module.exports = router;
