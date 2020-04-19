@@ -12,18 +12,17 @@ router.get(
   '/list',
   passport.authenticate('jwt', { session: false }),
   async (req, res) => {
-    // const { pageNum, pageSize } = req.query;
-    // const postList = await Post.find()
-    //   .populate({
-    //     path: 'userId',
-    //     model: User,
-    //     select: { name: 1, avatar: 1 },
-    //   })
-    //   .sort({ created_at: 'desc' })
-    //   .skip(pageNum * pageSize)
-    //   .limit(Number(pageSize));
-    // res.json(postList);
-    res.json('');
+    const { pageNum, pageSize } = req.query;
+    const postList = await Article.find()
+      .populate({
+        path: 'userId',
+        model: User,
+        select: { name: 1, avatar: 1 },
+      })
+      .sort({ created_at: 'desc' })
+      .skip(pageNum * pageSize)
+      .limit(Number(pageSize));
+    res.json(postList);
   },
 );
 
