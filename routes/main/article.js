@@ -4,7 +4,6 @@ const passport = require('passport');
 const Article = require('../../models/article');
 const User = require('../../models/user');
 const Comment = require('../../models/comment');
-const validatorArticleInput = require('../../validator/article');
 const validatorCommentInput = require('../../validator/comment');
 const refreshUserLastDate = require('../../util/refreshLastDate');
 const router = express.Router();
@@ -27,36 +26,6 @@ router.get('/inquire', (req, res) => {
       .catch(err => console.log(err));
   });
 });
-
-/**
- * $ GET ylink/article/add
- * @description 新增文章接口
- */
-router.post(
-  '/add',
-  passport.authenticate('jwt', { session: false }),
-  (req, res) => {
-    refreshUserLastDate(req.user._id);
-    const { errors, isValid } = validatorArticleInput(req.body);
-
-    if (!isValid) {
-      return res.status(403).json(errors);
-    }
-
-    const newArticle = new Article({
-      userId: req.user._id,
-      title: req.body.title,
-      content: req.body.content,
-      coverImage: req.body.coverImage || '',
-      video: req.body.video || '',
-    });
-
-    newArticle
-      .save()
-      .then(article => res.json(article))
-      .catch(err => console.log(err));
-  },
-);
 
 /**
  * $ GET ylink/article/:id

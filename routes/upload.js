@@ -59,7 +59,7 @@ router.post(
             if (err) throw err;
           });
         });
-        res.json(files);
+        res.json({ errno: 0, data: files });
       }
     });
   },
