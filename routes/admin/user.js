@@ -71,4 +71,21 @@ router.get(
   },
 );
 
+/**
+ * @description 获取用户列表
+ */
+router.get(
+  '/list',
+  passport.authenticate('jwt', { session: false }),
+  async (req, res) => {
+    const { pageNum, pageSize } = req.query;
+
+    const list = await User.find()
+      .skip(pageNum * pageSize)
+      .limit(Number(pageSize))
+      .sort({ created_at: 'desc' });
+    res.json(list);
+  },
+);
+
 module.exports = router;
