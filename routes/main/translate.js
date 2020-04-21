@@ -31,11 +31,13 @@ router.post(
           res.json({ success: true, data });
         });
       } else {
-        const { query, from = 'auto', to = 'auto' } = req.body;
+        const { query, from = 'en', to = 'zh-CHS' } = req.body;
+        // console.log(query);
         translation({ query, from, to })
           .then(result => {
+            // console.log(result);
             const data = new Word({
-              query: result.data.query.toLowerCase,
+              query: result.data.query.toLowerCase(),
               translation: result.data.translation,
               basic: result.data.basic,
               web: result.data.web,

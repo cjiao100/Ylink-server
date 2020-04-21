@@ -6,12 +6,12 @@ const { appKey, key, youdaoURI, salt, curTime } = require('../config/keys');
 const truncate = require('./truncate');
 
 module.exports = ({ query, from, to }) => {
-  const str = appKey + truncate(query) + salt + curTime + key;
+  const str = appKey + truncate(query) + salt() + curTime + key;
   const sign = sha256(str);
   const params = {
     q: query,
     appKey: appKey,
-    salt: salt,
+    salt: salt(),
     from: from,
     to: to,
     sign: sign,
