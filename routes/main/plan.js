@@ -2,10 +2,8 @@ const express = require('express');
 const passport = require('passport');
 
 const Plan = require('../../models/plan');
-const Word = require('../../models/word');
 const User = require('../../models/user');
 const UserPlan = require('../../models/userPlan');
-const validatorPlanInput = require('../../validator/plan');
 const refreshUserLastDate = require('../../util/refreshLastDate');
 const router = express.Router();
 
@@ -104,69 +102,6 @@ router.get(
       };
       res.json({ data: planInfo, success: true });
     });
-  },
-);
-
-/**
- * @description 添加计划
- */
-router.post(
-  '/add',
-  passport.authenticate('jwt', { session: false }),
-  (req, res) => {
-    refreshUserLastDate(req.user._id);
-    const { errors, isValid } = validatorPlanInput(req.body);
-
-    if (!isValid) {
-      return res.status(403).json(errors);
-    }
-
-    const newPlan = new Plan({
-      name: req.body.name,
-    });
-
-    newPlan
-      .save()
-      .then(plan => {
-        res.json(plan);
-      })
-      .catch(err => {
-        res.status(500).json(err.message);
-        throw err;
-      });
-  },
-);
-
-/**
- * @description 删除计划
- */
-router.delete(
-  '/:planId',
-  passport.authenticate('jwt', { session: false }),
-  (req, res) => {
-    refreshUserLastDate(req.user._id);
-    Plan.findByIdAndDelete(req.params.planId)
-      .then(plan => {
-        if (plan) {
-          // console.log(plan);
-          return Promise.all([
-            Word.updateMany({ _id: plan.wordList }, { $unset: { planId: '' } }),
-            User.updateMany({ planId: plan._id }, { $unset: { plan: '' } }),
-            UserPlan.deleteOne({ planId: plan._id }),
-          ]);
-        } else {
-          res.status(400).json('没有找到计划');
-        }
-      })
-      .then(result => {
-        if (result[0].ok === 1 && result[1].ok === 1 && result[2].ok === 1) {
-          res.json(true);
-        }
-      })
-      .catch(err => {
-        res.status(500).json(err);
-        throw err;
-      });
   },
 );
 

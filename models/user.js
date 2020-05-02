@@ -41,7 +41,7 @@ const UserSchema = new Schema(
       type: [Schema.Types.ObjectId],
       default: [],
     },
-    lastLogin: {
+    last_login: {
       type: Date,
       default: new Date(),
     },

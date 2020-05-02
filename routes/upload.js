@@ -67,7 +67,7 @@ router.post(
 
 const posts = upload.single('photo');
 router.post(
-  '/upload/post',
+  '/post',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
     refreshUserLastDate(req.user._id);
