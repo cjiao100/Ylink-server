@@ -1,9 +1,11 @@
 const express = require('express');
 const passport = require('passport');
+const moment = require('moment');
 
 const User = require('../../models/user');
 const Post = require('../../models/post');
 const Topic = require('../../models/topic');
+const { SEVEN_DAYS_AGO } = require('../../util/moment');
 const router = express.Router();
 
 /**
@@ -90,7 +92,6 @@ router.get(
         model: Post,
         select: { browse: 1 },
       })
-      // .sort({ browse: 'desc' })
       .limit(5);
 
     postList.forEach(item => {
@@ -99,7 +100,114 @@ router.get(
       item.browse = browse;
     });
 
-    res.json(postList);
+    res.json(postList.sort((a, b) => (a.browse > b.browse ? -1 : 1)));
+  },
+);
+
+/**
+ * @description 获取7天内新增帖子数
+ */
+router.get(
+  '/day/post',
+  passport.authenticate('jwt', { session: false }),
+  async (req, res) => {
+    const posts = await Post.aggregate()
+      .match({
+        created_at: {
+          $gt: new Date(SEVEN_DAYS_AGO),
+        },
+      })
+      .group({
+        _id: {
+          $subtract: [
+            { $subtract: ['$created_at', new Date('1970-01-01')] },
+            {
+              $mod: [
+                { $subtract: ['$created_at', new Date('1970-01-01')] },
+                1000 * 60 * 60 * 24 /*聚合时间段，30分钟*/,
+              ],
+            },
+          ],
+        },
+        count: { $sum: 1 },
+      })
+      .project({
+        _id: 0,
+        count: 1,
+        date: '$_id',
+      });
+
+    console.log(posts);
+
+    const dateMap = [];
+    let date = SEVEN_DAYS_AGO;
+    for (let i = 0; i < 7; i++) {
+      date = moment(date)
+        .add(1, 'd')
+        .format('YYYY-MM-DD');
+      const post = posts.filter(
+        item => moment(item.date).format('YYYY-MM-DD') === date,
+      );
+      if (post.length === 0) {
+        dateMap[i] = { date: date, count: 0 };
+      } else {
+        dateMap[i] = { date: date, count: post[0].count };
+      }
+    }
+
+    res.json(dateMap);
+  },
+);
+
+/**
+ * @description 获取7天内新增话题数
+ */
+
+router.get(
+  '/day/topic',
+  passport.authenticate('jwt', { session: false }),
+  async (req, res) => {
+    const topics = await Topic.aggregate()
+      .match({
+        created_at: { $gt: new Date(SEVEN_DAYS_AGO) },
+      })
+      .group({
+        _id: {
+          $subtract: [
+            { $subtract: ['$created_at', new Date('1970-01-01')] },
+            {
+              $mod: [
+                { $subtract: ['$created_at', new Date('1970-01-01')] },
+                1000 * 60 * 60 * 24 /*聚合时间段，30分钟*/,
+              ],
+            },
+          ],
+        },
+        count: { $sum: 1 },
+      })
+      .project({
+        _id: 0,
+        count: 1,
+        date: '$_id',
+      });
+
+    const dateMap = [];
+    let date = SEVEN_DAYS_AGO;
+    for (let i = 0; i < 7; i++) {
+      date = moment(date)
+        .add(1, 'd')
+        .format('YYYY-MM-DD');
+      const topic = topics.filter(
+        item => moment(item.date).format('YYYY-MM-DD') === date,
+      );
+      if (topic.length === 0) {
+        dateMap[i] = { date: date, count: 0 };
+      } else {
+        dateMap[i] = { date: date, count: topic[0].count };
+      }
+    }
+
+    res.json(dateMap);
   },
 );
 
