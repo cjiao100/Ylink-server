@@ -2,6 +2,7 @@ const express = require('express');
 const passport = require('passport');
 
 const Todo = require('../../models/todo');
+const Post = require('../../models/post');
 const router = express.Router();
 
 /**
@@ -70,6 +71,36 @@ router.delete(
     } catch (error) {
       res.status(500).json(error);
     }
+  },
+);
+
+/**
+ * @description 获取举报列表
+ */
+router.get(
+  '/report',
+  passport.authenticate('jwt', { session: false }),
+  async (req, res) => {
+    const todos = await Todo.find({ post: { $exists: true } }).populate({
+      path: 'post',
+      model: Post,
+      select: { title: 1, content: 1, images: 1 },
+    });
+    res.json(todos);
+  },
+);
+
+/**
+ * @description 举报成功
+ */
+router.delete(
+  '/report/:id',
+  passport.authenticate('jwt', { session: false }),
+  async (req, res) => {
+    const todo = await Todo.findByIdAndDelete(req.params.id);
+    await Post.findByIdAndDelete(todo.post);
+
+    res.json(true);
   },
 );
 

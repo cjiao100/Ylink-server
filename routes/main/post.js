@@ -2,9 +2,10 @@ const express = require('express');
 const passport = require('passport');
 const mongoose = require('mongoose');
 
+const Todo = require('../../models/todo');
+const User = require('../../models/user');
 const Post = require('../../models/post');
 const Topic = require('../../models/topic');
-const User = require('../../models/user');
 const UserPost = require('../../models/userPost');
 const PostComment = require('../../models/postComment');
 const validatorPostInput = require('../../validator/post');
@@ -421,6 +422,37 @@ router.get(
       .then(result => {
         res.json({ data: result, success: true });
       });
+  },
+);
+
+/**
+ * @description 举报帖子
+ */
+router.post(
+  '/:postId/report',
+  passport.authenticate('jwt', { session: false }),
+  async (req, res) => {
+    refreshUserLastDate(req.user._id);
+    const post = await Post.findById(req.params.postId);
+    if (!post) {
+      res.status(404).json('没有这个帖子');
+    }
+    const todo = await Todo.findOne({
+      user: req.user._id,
+      post: req.params.postId,
+    });
+    if (todo) {
+      return res.status(400).json('已经举报过了');
+    }
+    const newTodo = new Todo({
+      title: `举报帖子: ${post.title}`,
+      user: req.user._id,
+      post: req.params.postId,
+    });
+
+    await newTodo.save();
+
+    res.json({ success: true });
   },
 );
 

@@ -137,8 +137,6 @@ router.get(
         date: '$_id',
       });
 
-    console.log(posts);
-
     const dateMap = [];
     let date = SEVEN_DAYS_AGO;
     for (let i = 0; i < 7; i++) {
