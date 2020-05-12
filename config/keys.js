@@ -30,7 +30,7 @@ module.exports = {
     //   S4()
     // );
   },
-  curTime: Math.round(new Date().getTime() / 1000),
+  curTime: () => Math.round(new Date().getTime() / 1000),
 
   // 邮箱服务
   smtp: {

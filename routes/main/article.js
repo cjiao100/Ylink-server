@@ -20,7 +20,7 @@ router.get('/inquire', (req, res) => {
     Article.find()
       .skip(pageNum * pageSize)
       .limit(Number(pageSize))
-      // .sort({ browse: 'desc', awesome: 'desc' })
+      .sort({ created_at: 'desc', browse: 'desc' })
       .exec()
       .then(list => res.json({ success: true, data: list, total: count }))
       .catch(err => console.log(err));

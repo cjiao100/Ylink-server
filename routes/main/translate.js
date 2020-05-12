@@ -35,7 +35,7 @@ router.post(
         // console.log(query);
         translation({ query, from, to })
           .then(result => {
-            // console.log(result);
+            console.log(result.data);
             const data = new Word({
               query: result.data.query.toLowerCase(),
               translation: result.data.translation,

@@ -10,6 +10,7 @@ const db = require('./config/keys').mongoURI;
 const upload = require('./routes/upload');
 const index = require('./routes/index');
 const admin = require('./routes/admin');
+const search = require('./routes/search');
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -36,6 +37,7 @@ require('./config/passport')(passport);
 app.use('/ylink/', index);
 app.use('/ylink/admin', admin);
 app.use('/ylink/upload', upload);
+app.use('/ylink/search', search);
 
 // 连接mongodb数据库
 mongoose.set('useFindAndModify', false);

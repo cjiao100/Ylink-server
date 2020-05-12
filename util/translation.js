@@ -6,7 +6,7 @@ const { appKey, key, youdaoURI, salt, curTime } = require('../config/keys');
 const truncate = require('./truncate');
 
 module.exports = ({ query, from, to }) => {
-  const str = appKey + truncate(query) + salt() + curTime + key;
+  const str = appKey + truncate(query) + salt() + curTime() + key;
   const sign = sha256(str);
   const params = {
     q: query,
@@ -16,8 +16,10 @@ module.exports = ({ query, from, to }) => {
     to: to,
     sign: sign,
     signType: 'v3',
-    curtime: curTime,
+    curtime: curTime(),
   };
+  console.log(curTime);
+  console.log(sign);
   const targetURL = `${youdaoURI}?${querystring.stringify(params)}`;
   return axios.get(targetURL);
 };

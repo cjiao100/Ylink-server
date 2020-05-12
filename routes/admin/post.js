@@ -86,13 +86,11 @@ router.get(
   '/topic/hot',
   passport.authenticate('jwt', { session: false }),
   async (req, res) => {
-    const postList = await Topic.find()
-      .populate({
-        path: 'postList',
-        model: Post,
-        select: { browse: 1 },
-      })
-      .limit(5);
+    const postList = await Topic.find().populate({
+      path: 'postList',
+      model: Post,
+      select: { browse: 1 },
+    });
 
     postList.forEach(item => {
       let browse = 0;
