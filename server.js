@@ -6,6 +6,7 @@ const passport = require('passport');
 const app = express();
 const port = process.env.PORT || 5000;
 
+const cron = require('./util/cron');
 const db = require('./config/keys').mongoURI;
 const upload = require('./routes/upload');
 const index = require('./routes/index');
@@ -53,6 +54,8 @@ mongoose
     console.log('MongoDB Connected');
   })
   .catch(err => console.log(err));
+
+cron();
 
 app.get('/login', (req, res) => {
   res.json({ message: 'Hello Word', success: true });
