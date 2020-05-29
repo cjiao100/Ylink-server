@@ -5,7 +5,7 @@ const Online = require('../models/online');
 module.exports = () => {
   setInterval(async () => {
     const CURRENT_TIME = moment();
-    const FIVE_MINUTES_AGO = moment().subtract(5, 'days');
+    const FIVE_MINUTES_AGO = moment().subtract(5, 'minutes');
 
     const count = await User.find({
       last_login: { $lt: CURRENT_TIME, $gt: FIVE_MINUTES_AGO },
