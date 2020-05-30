@@ -10,8 +10,8 @@ router.get(
   async (req, res) => {
     const online = await Online.find()
       .sort({ date: -1 })
-      .limit(10)
-      // .sort({ date: 1 });
+      .limit(10);
+    // .sort({ date: 1 });
     res.json(online);
   },
 );
